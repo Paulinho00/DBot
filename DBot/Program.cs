@@ -5,9 +5,6 @@ using Discord.WebSocket;
 
 public class Program
 {
-    /// <summary>
-    /// Bot client
-    /// </summary>
     private readonly DiscordSocketClient _client;
     private readonly CommandHandler _commandHandler;
     private readonly CommandService _commandService;
@@ -28,7 +25,8 @@ public class Program
             GatewayIntents.GuildMembers |
             GatewayIntents.GuildMessageReactions |
             GatewayIntents.GuildMessages |
-            GatewayIntents.GuildVoiceStates
+            GatewayIntents.GuildVoiceStates |
+            GatewayIntents.GuildPresences
         });
         _commandService = new CommandService();
         _commandHandler = new CommandHandler(_client, _commandService);
