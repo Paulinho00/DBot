@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using DBot.Services;
+using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
 public class Program
@@ -7,6 +9,8 @@ public class Program
     /// Bot client
     /// </summary>
     private readonly DiscordSocketClient _client;
+    private readonly CommandHandler _commandHandler;
+    private readonly CommandService _commandService;
 
     public static Task Main(string[] args)
     {
@@ -15,7 +19,20 @@ public class Program
 
     private Program()
     {
-        _client = new DiscordSocketClient();
+        _client = new DiscordSocketClient(new DiscordSocketConfig()
+        {
+            AlwaysDownloadUsers = true,
+            MessageCacheSize = 100,
+            GatewayIntents =
+            GatewayIntents.Guilds |
+            GatewayIntents.GuildMembers |
+            GatewayIntents.GuildMessageReactions |
+            GatewayIntents.GuildMessages |
+            GatewayIntents.GuildVoiceStates
+        });
+        _commandService = new CommandService();
+        _commandHandler = new CommandHandler(_client, _commandService);
+
 
 
         //Assign _client's Log event to Log handler implementation
@@ -29,7 +46,8 @@ public class Program
     /// <returns></returns>
     public async Task MainAsync()
     {
-       
+        await _commandHandler.InitCommandsAsync();
+
         //Change token source dependent on your way of storing
         await _client.LoginAsync(TokenType.Bot, File.ReadAllText("../../../config.txt").Trim());
         await _client.StartAsync();
