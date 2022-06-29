@@ -6,11 +6,21 @@ public class Program
     /// <summary>
     /// Bot client
     /// </summary>
-    private DiscordSocketClient _client;
+    private readonly DiscordSocketClient _client;
 
     public static Task Main(string[] args)
     {
        return new Program().MainAsync();
+    }
+
+    private Program()
+    {
+        _client = new DiscordSocketClient();
+
+
+        //Assign _client's Log event to Log handler implementation
+        _client.Log += Log;
+
     }
 
     /// <summary>
@@ -19,11 +29,7 @@ public class Program
     /// <returns></returns>
     public async Task MainAsync()
     {
-        _client = new DiscordSocketClient();
-
-        //Assign _client's Log event to Log handler implementation
-        _client.Log += Log;
-
+       
         //Change token source dependent on your way of storing
         await _client.LoginAsync(TokenType.Bot, File.ReadAllText("../../../config.txt").Trim());
         await _client.StartAsync();
