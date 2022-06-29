@@ -8,27 +8,29 @@ using Discord.WebSocket;
 
 namespace DBot.Modules
 {
-    public class InfoModule : ModuleBase<SocketCommandContext>
+    public class BasicCommandsModule : ModuleBase<SocketCommandContext>
     {
         //~echo hello -> hello
-        [Command("echo")]
+        [Command("eee")]
         [Summary("Echoes a message.")]
         public Task EchoAsync([Remainder][Summary("The text to echo")] string echo)
         {
             return ReplyAsync(echo);
         }
 
+        //~userinfo Bob -> 
         [Command("userinfo")]
         [Summary("Return a information about chosen user.")]
-        public async Task UserInfoAsync([Summary("User to get info from")] SocketUser user = null)
+        public async Task UserInfoAsync([Remainder][Summary("User to get info from")] SocketUser user = null)
         {
             if (user == null) await ReplyAsync("Nie ma takiego użytkownika");
-            else await ReplyAsync($"{user.Username}, {user.ActiveClients.ToString}");
+            else await ReplyAsync($"{user.Username}#{user.Discriminator}, Created:{user.CreatedAt}, Status::{user.Status}");
         }
 
-        [Command("pingpong")]
+        //~pingpong Bob -> ping ten times @Bob
+        [Command("pingpong", RunMode = RunMode.Async)]
         [Summary("Pings 10 time chosen user.")]
-        public async Task PingTenTimesUser([Summary("User to be pinged")] SocketUser user = null)
+        public async Task PingTenTimesUser([Remainder][Summary("User to be pinged")] SocketUser user = null)
         {
             if (user == null) await ReplyAsync("Nie ma takiego użytkownika");
             else
@@ -38,7 +40,7 @@ namespace DBot.Modules
                 {
                     pingTasks.Add(ReplyAsync($"<@{user.Id}>"));
                 }
-                await Task.WhenAny(pingTasks);
+                await Task.WhenAll(pingTasks);
             }
         }
     }

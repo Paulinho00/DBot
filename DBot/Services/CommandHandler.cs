@@ -37,7 +37,7 @@ namespace DBot.Services
             int prefixEndIndex = 0;
 
             //Check if command has prefix and is not send by bot
-            if (!(message.HasCharPrefix('~', ref prefixEndIndex) && !message.HasMentionPrefix(_client.CurrentUser, ref prefixEndIndex)) || message.Author.IsBot) return;
+            if (!(message.HasCharPrefix('`', ref prefixEndIndex) && !message.HasMentionPrefix(_client.CurrentUser, ref prefixEndIndex)) || message.Author.IsBot) return;
 
             var context = new SocketCommandContext(_client, message);
 
