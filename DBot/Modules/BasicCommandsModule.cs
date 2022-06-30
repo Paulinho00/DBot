@@ -11,7 +11,11 @@ namespace DBot.Modules
 {
     public class BasicCommandsModule : ModuleBase<SocketCommandContext>
     {
-        //~echo hello -> hello
+        /// <summary>
+        /// `eee hello -> hello
+        /// </summary>
+        /// <param name="echo"></param>
+        /// <returns></returns>
         [Command("eee")]
         [Summary("Echoes a message.")]
         public Task EchoAsync([Remainder][Summary("The text to echo")] string echo)
@@ -19,16 +23,24 @@ namespace DBot.Modules
             return ReplyAsync(echo);
         }
 
-        //~userinfo Bob -> 
+        /// <summary>
+        /// `userinfo Bob -> Bob#6681, Created: 09.12.2018 17:19:04 +00:00, Status: Online
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [Command("userinfo")]
         [Summary("Return a information about chosen user.")]
         public async Task UserInfoAsync([Remainder][Summary("User to get info from")] SocketUser user = null)
         {
             if (user == null) await ReplyAsync("Nie ma takiego użytkownika");
-            else await ReplyAsync($"{user.Username}#{user.Discriminator}, Created:{user.CreatedAt}, Status::{user.Status}");
+            else await ReplyAsync($"{user.Username}#{user.Discriminator}, Created: {user.CreatedAt}, Status: {user.Status}");
         }
 
-        //~pingpong Bob -> ping ten times @Bob
+        /// <summary>
+        /// `pingpong Bob -> ping ten times @Bob
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [Command("pingpong", RunMode = RunMode.Async)]
         [Summary("Pings 10 time chosen user.")]
         public async Task PingTenTimesUser([Remainder][Summary("User to be pinged")] SocketUser user = null)
