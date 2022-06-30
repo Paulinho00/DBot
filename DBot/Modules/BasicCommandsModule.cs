@@ -44,5 +44,18 @@ namespace DBot.Modules
                 await Task.WhenAll(pingTasks);
             }
         }
+
+        /// <summary>
+        /// `gameDraw wt wot ws -> Gra: wt or Gra: wot or Gra: ws
+        /// </summary>
+        /// <param name="gamesName"></param>
+        /// <returns></returns>
+        public async Task drawGame([Remainder][Summary("List of games name")] string gamesName)
+        {
+            string[] games = gamesName.Split(" ");
+            Random random = new Random();
+            int indexOfGame = random.Next(games.Length);
+            await ReplyAsync($"Gra: {games[indexOfGame]}");
+        }
     }
 }
