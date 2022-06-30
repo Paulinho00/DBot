@@ -14,17 +14,19 @@ namespace DBot.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
+        private readonly IServiceProvider _serviceProvider;
 
-       public CommandHandler(DiscordSocketClient client, CommandService commands)
+       public CommandHandler(DiscordSocketClient client, CommandService commands, IServiceProvider serviceProvider)
         {
             _client = client;
             _commands = commands;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task InitCommandsAsync()
         {
            
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
             _client.MessageReceived += HandleCommandAsync;
         }
 
@@ -41,7 +43,7 @@ namespace DBot.Services
 
             var context = new SocketCommandContext(_client, message);
 
-            var result = await _commands.ExecuteAsync(context, prefixEndIndex, null);
+            var result = await _commands.ExecuteAsync(context, prefixEndIndex, _serviceProvider);
 
             //Sends error message when command is not properly executed
             if(!result.IsSuccess && result.Error != CommandError.UnknownCommand)
