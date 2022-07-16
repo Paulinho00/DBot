@@ -2,41 +2,25 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Victoria;
 using Microsoft.Extensions.DependencyInjection;
+using DBot.Managers;
 
 namespace DBot
 {
     public class Startup
     {
-        private readonly DiscordSocketClient _client;
         private readonly CommandHandler _commandHandler;
         private readonly CommandService _commandService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly DiscordSocketClientManager _clientManager;
 
         public Startup()
         {
-            _client = new DiscordSocketClient(new DiscordSocketConfig()
-            {
-                AlwaysDownloadUsers = true,
-                MessageCacheSize = 100,
-                GatewayIntents =
-            GatewayIntents.Guilds |
-            GatewayIntents.GuildMembers |
-            GatewayIntents.GuildMessageReactions |
-            GatewayIntents.GuildMessages |
-            GatewayIntents.GuildVoiceStates |
-            GatewayIntents.GuildPresences
-            });
-
             _commandService = new CommandService();
+            _clientManager = new DiscordSocketClientManager();
             _serviceProvider = BuildServiceProvider();
-            _commandHandler = new CommandHandler(_client, _commandService, _serviceProvider);
-            
-
-
-
-            //Assign _client's Log event to Log handler implementation
-            _client.Log += Log;
+            _commandHandler = new CommandHandler(_clientManager.SocketClient, _commandService, _serviceProvider);            
         }
 
         /// <summary>
@@ -48,29 +32,18 @@ namespace DBot
             await _commandHandler.InitCommandsAsync();
 
             //Change token source dependent on your way of storing
-            await _client.LoginAsync(TokenType.Bot, File.ReadAllText("../../../config.txt").Trim());
-            await _client.StartAsync();
+            await _clientManager.SocketClient.LoginAsync(TokenType.Bot, File.ReadAllText("../../../config.txt").Trim());
+            await _clientManager.SocketClient.StartAsync();
 
             //Block using task until the program is closed
             await Task.Delay(-1);
-
-        }
-
-        /// <summary>
-        /// Return log messages on console
-        /// </summary>
-        /// <param name="msg">LogMessage object provided by log source</param>
-        /// <returns></returns>
-        private Task Log(LogMessage msg)
-        {
-            Console.WriteLine(msg.ToString());
-            return Task.CompletedTask;
         }
 
         public IServiceProvider BuildServiceProvider() => new ServiceCollection()
-            .AddSingleton(_client)
+            .AddSingleton(_clientManager.SocketClient)
             .AddSingleton(_commandService)
-            .AddSingleton<CommandHandler>()
+            .AddSingleton(_clientManager.LavaConfig)
+            .AddSingleton(_clientManager.InstanceOfLavaNode)
             .BuildServiceProvider();
     }
 }
