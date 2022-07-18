@@ -77,7 +77,7 @@ namespace DBot.Services
             }
 
             //Send request to lavalink to find song
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, searchQuery);
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.YouTube, searchQuery);
             if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
             {
                 return "Nic takiego nie znalazłem";
