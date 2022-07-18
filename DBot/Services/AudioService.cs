@@ -20,6 +20,7 @@ namespace DBot.Services
         {
             _lavaNode = lavaNode;
             _lavaNode.OnTrackEnded += OnTrackEnded;
+            _lavaNode.OnTrackStarted += OnTrackStarted;
         }
 
         /// <summary>
@@ -136,6 +137,11 @@ namespace DBot.Services
             await args.Player.PlayAsync(lavaTrack);
             await args.Player.TextChannel.SendMessageAsync(
                 $"{args.Reason}: {args.Track.Title}\nTeraz gra: {lavaTrack.Title}");
+        }
+
+        private async Task OnTrackStarted(TrackStartEventArgs arg)
+        {
+            await arg.Player.TextChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
         }
     }
 }
