@@ -44,6 +44,7 @@ namespace DBot
             .AddSingleton(_commandService)
             .AddSingleton(_clientManager.LavaConfig)
             .AddSingleton(_clientManager.InstanceOfLavaNode)
+            .AddSingleton<AudioService>()
             .BuildServiceProvider();
     }
 }

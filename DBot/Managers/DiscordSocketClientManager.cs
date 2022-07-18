@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using DBot.Services;
+using Discord;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace DBot.Managers
         {
             if (!InstanceOfLavaNode.IsConnected)
             {
-                InstanceOfLavaNode.ConnectAsync();
+               InstanceOfLavaNode.ConnectAsync();
             }
         }
     }

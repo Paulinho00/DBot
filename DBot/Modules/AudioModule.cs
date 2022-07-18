@@ -1,10 +1,15 @@
-﻿using Discord;
+﻿using DBot.Managers;
+using DBot.Services;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Victoria;
+using Victoria.Enums;
+using Victoria.Responses.Search;
 
 namespace DBot.Modules
 {
@@ -13,20 +18,27 @@ namespace DBot.Modules
     /// </summary>
     public class AudioModule : ModuleBase<SocketCommandContext>
     {
+        private readonly LavaNode _lavaNode;
+        private readonly AudioService _audioService;
+
+        public AudioModule(LavaNode lavaNode, AudioService audioService)
+        {
+            _lavaNode = lavaNode;
+            _audioService = audioService;
+        }
+
         [Command("join", RunMode = RunMode.Async)]
         [Summary("Joins voice channel")]
-        public async Task JoinChannelAsync([Summary("Channel to which bot will join")]IVoiceChannel channel = null)
+        public async Task JoinChannelAsync()
         {
-            //Assings voice channel of command caller if there is no specific voice channel given
-            channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+            await ReplyAsync(_audioService.JoinChannel(Context));
+        }
 
-            if (channel == null) 
-            { 
-                await Context.Channel.SendMessageAsync("Musisz być na kanale głosowym"); 
-                return; 
-            }
-
-            var audioClient = await channel.ConnectAsync();
+        [Command("Play")]
+        [Summary("Plays sounds from internet")]
+        public async Task PlayAsync([Remainder] string searchQuery)
+        {
+            await ReplyAsync(await _audioService.PlayFromInternetAsync(searchQuery, Context));
         }
        
     }
