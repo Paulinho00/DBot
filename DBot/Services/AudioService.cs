@@ -19,6 +19,7 @@ namespace DBot.Services
         public AudioService(LavaNode lavaNode)
         {
             _lavaNode = lavaNode;
+            _lavaNode.OnTrackEnded += OnTrackEnded;
         }
 
         /// <summary>
@@ -111,6 +112,30 @@ namespace DBot.Services
                 x.ShouldPause = false;
             });
             return message;
+        }
+
+        private async Task OnTrackEnded(TrackEndedEventArgs args)
+        {
+            if(args.Reason != TrackEndReason.Finished)
+            {
+                return;
+            }
+
+            var player = args.Player;
+            if (!player.Queue.TryDequeue(out var lavaTrack))
+            {
+                await player.TextChannel.SendMessageAsync("Zagrano wszystko z kolejki, dawaj kolejne");
+                return;
+            }
+
+            if (lavaTrack is null) {
+                await player.TextChannel.SendMessageAsync("Następny element nie jest utworem");
+                return;
+            }
+
+            await args.Player.PlayAsync(lavaTrack);
+            await args.Player.TextChannel.SendMessageAsync(
+                $"{args.Reason}: {args.Track.Title}\nTeraz gra: {lavaTrack.Title}");
         }
     }
 }
