@@ -234,7 +234,7 @@ namespace DBot.Services
         /// </summary>
         /// <param name="context">Context of command</param>
         /// <returns>Message of succesful clear or cause of not clearing</returns>
-        public async Task<string> ClearPlayerQueueAsync(SocketCommandContext context)
+        public string ClearPlayerQueue(SocketCommandContext context)
         {
             if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
             {
@@ -249,6 +249,35 @@ namespace DBot.Services
             player.Queue.Clear();
             return "Kolejka wyczyszczona";
 
+        }
+
+        /// <summary>
+        /// Leaves channel which bot is connected to
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>Message of succesful leave or cause of not leaving</returns>
+        public async Task<string> LeaveChannelAsync(SocketCommandContext context)
+        {
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            var voiceChannel = (context.User as IVoiceState)?.VoiceChannel ?? player.VoiceChannel;
+            if(voiceChannel == null)
+            {
+                return "Nie wiem skąd mam się odłączyć";
+            }
+
+            try
+            {
+                await _lavaNode.LeaveAsync(voiceChannel);
+                return $"Odłączyłem się od {voiceChannel.Name}";
+            }
+            catch(Exception e)
+            {
+                return e.Message;
+            }
         }
 
         private async Task OnTrackEnded(TrackEndedEventArgs args)

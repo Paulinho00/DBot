@@ -77,7 +77,15 @@ namespace DBot.Modules
         [Summary("Clear player's tracks queue")]
         public async Task ClearQueue()
         {
-            await ReplyAsync(await _audioService.ClearPlayerQueueAsync(Context));
+            await ReplyAsync( _audioService.ClearPlayerQueue(Context));
+        }
+
+        [Command("leave")]
+        [Alias("l")]
+        [Summary("Leaves voice channel which bot is connected to")]
+        public async Task LeaveChannelAsync()
+        {
+            await ReplyAsync(await _audioService.LeaveChannelAsync(Context));
         }
        
     }
