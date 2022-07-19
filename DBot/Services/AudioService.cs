@@ -200,6 +200,34 @@ namespace DBot.Services
             }
         }
 
+        /// <summary>
+        /// Stops player
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>Message of succesful player stop or cause of not stopping</returns>
+        public async Task<string> StopPlayerAsync(SocketCommandContext context)
+        {
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            if (player.PlayerState == PlayerState.Stopped)
+            {
+                return "Nie mam jak zastopować";
+            }
+
+            try
+            {
+                await player.StopAsync();
+                return "Zastopowane";
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+
         private async Task OnTrackEnded(TrackEndedEventArgs args)
         {
             if(args.Reason != TrackEndReason.Finished)
