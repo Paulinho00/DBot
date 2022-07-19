@@ -27,7 +27,7 @@ namespace DBot.Services
         /// Joins channel where caller is 
         /// </summary>
         /// <param name="context">Context of command</param>
-        /// <returns></returns>
+        /// <returns>message with channel's name or cause why it didn't join to channel</returns>
         public string JoinChannel(SocketCommandContext context)
         {
             //Check if bot is connected to channel
@@ -62,7 +62,7 @@ namespace DBot.Services
         /// </summary>
         /// <param name="searchQuery">query to search song</param>
         /// <param name="context">Context of command</param>
-        /// <returns></returns>
+        /// <returns>message with name of song or number of songs or cause why it didn't play/returns>
         public async Task<string> PlayFromInternetAsync(string searchQuery, SocketCommandContext context)
         {
             if (string.IsNullOrWhiteSpace(searchQuery))
@@ -114,6 +114,64 @@ namespace DBot.Services
             });
             return message;
         }
+
+        /// <summary>
+        /// Pauses player
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>message on succesful pausing or cause of not pausing</returns>
+        public async Task<string> PausePlayerAsync(SocketCommandContext context)
+        {
+            if(!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            if(player.PlayerState != PlayerState.Playing)
+            {
+                return "Nie gram nic to co mam zapauzować";
+            }
+
+            try
+            {
+                await player.PauseAsync();
+                return "Zapauzowane";
+            }
+            catch(Exception e)
+            {
+                return e.Message;
+            }
+
+        }
+
+        /// <summary>
+        /// Resumes player
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>message on succesful resume or cause of not resuming</returns>
+        public async Task<string> ResumePlayerAsync(SocketCommandContext context)
+        {
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            if (player.PlayerState != PlayerState.Paused)
+            {
+                return "Nie gram nic to co mam wznowić";
+            }
+
+            try
+            {
+                await player.ResumeAsync();
+                return "Wznowione";
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+
 
         private async Task OnTrackEnded(TrackEndedEventArgs args)
         {

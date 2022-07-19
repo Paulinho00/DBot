@@ -40,6 +40,20 @@ namespace DBot.Modules
         {
             await ReplyAsync(await _audioService.PlayFromInternetAsync(searchQuery, Context));
         }
+
+        [Command("Pause")]
+        [Summary("Pauses player")]
+        public async Task PauseAsync()
+        {
+            await ReplyAsync(await _audioService.PausePlayerAsync(Context));
+        }
+
+        [Command("Resume")]
+        [Summary("Resumes player")]
+        public async Task ResumeAsync()
+        {
+            await ReplyAsync(await _audioService.ResumePlayerAsync(Context));
+        }
        
     }
 }
