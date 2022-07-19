@@ -68,6 +68,13 @@ namespace DBot.Modules
         {
             await ReplyAsync(await _audioService.StopPlayerAsync(Context));
         }
+
+        [Command("clear")]
+        [Summary("Clear player's tracks queue")]
+        public async Task ClearQueue()
+        {
+            await ReplyAsync(await _audioService.ClearPlayerQueueAsync(Context));
+        }
        
     }
 }

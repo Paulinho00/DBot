@@ -228,6 +228,29 @@ namespace DBot.Services
             }
         }
 
+
+        /// <summary>
+        /// Clears player's track queue
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>Message of succesful clear or cause of not clearing</returns>
+        public async Task<string> ClearPlayerQueueAsync(SocketCommandContext context)
+        {
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            if(player.Queue.Count == 0)
+            {
+                return "Kolejka jest pusta";
+            }
+
+            player.Queue.Clear();
+            return "Kolejka wyczyszczona";
+
+        }
+
         private async Task OnTrackEnded(TrackEndedEventArgs args)
         {
             if(args.Reason != TrackEndReason.Finished)
