@@ -28,6 +28,7 @@ namespace DBot.Modules
         }
 
         [Command("join", RunMode = RunMode.Async)]
+        [Alias("j")]
         [Summary("Joins voice channel")]
         public async Task JoinChannelAsync()
         {
@@ -35,6 +36,7 @@ namespace DBot.Modules
         }
 
         [Command("Play")]
+        [Alias("p")]
         [Summary("Plays sounds from internet")]
         public async Task PlayAsync([Remainder] string searchQuery)
         {
@@ -49,6 +51,7 @@ namespace DBot.Modules
         }
 
         [Command("Resume")]
+        [Alias("r")]
         [Summary("Resumes player")]
         public async Task ResumeAsync()
         {
@@ -70,6 +73,7 @@ namespace DBot.Modules
         }
 
         [Command("clear")]
+        [Alias("clr")]
         [Summary("Clear player's tracks queue")]
         public async Task ClearQueue()
         {
