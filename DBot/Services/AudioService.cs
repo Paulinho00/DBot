@@ -73,7 +73,7 @@ namespace DBot.Services
 
             if (!_lavaNode.HasPlayer(context.Guild))
             {
-                return "Nie jestem połączony do kanału";
+                JoinChannel(context);
             }
 
             //Send request to lavalink to find song
