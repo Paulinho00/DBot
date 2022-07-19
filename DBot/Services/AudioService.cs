@@ -58,11 +58,11 @@ namespace DBot.Services
 
 
         /// <summary>
-        /// Plays songs searched by given string
+        /// Plays track searched by given string
         /// </summary>
         /// <param name="searchQuery">query to search song</param>
         /// <param name="context">Context of command</param>
-        /// <returns>message with name of song or number of songs or cause why it didn't play/returns>
+        /// <returns>message with name of track or number of songs or cause why it didn't play/returns>
         public async Task<string> PlayFromInternetAsync(string searchQuery, SocketCommandContext context)
         {
             if (string.IsNullOrWhiteSpace(searchQuery))
@@ -172,6 +172,33 @@ namespace DBot.Services
             }
         }
 
+        /// <summary>
+        /// Skip current track
+        /// </summary>
+        /// <param name="context">Context of command</param>
+        /// <returns>Name of skipped track and name of next track or cause of not skipping</returns>
+        public async Task<string> SkipCurrentTrackAsync(SocketCommandContext context)
+        {
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            if (player.PlayerState != PlayerState.Playing)
+            {
+                return "Nie mam nic do skipowania";
+            }
+
+            try
+            {
+                var (oldTrack, currentTrack) = await player.SkipAsync();
+                return $"Pominięto {oldTrack.Title}, teraz gra: {currentTrack.Title}";
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
 
         private async Task OnTrackEnded(TrackEndedEventArgs args)
         {

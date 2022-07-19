@@ -54,6 +54,13 @@ namespace DBot.Modules
         {
             await ReplyAsync(await _audioService.ResumePlayerAsync(Context));
         }
+
+        [Command("Skip")]
+        [Summary("Skips current track")]
+        public async Task SkipAsync()
+        {
+            await ReplyAsync(await _audioService.SkipCurrentTrackAsync(Context));
+        }
        
     }
 }
