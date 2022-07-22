@@ -29,7 +29,7 @@ namespace DBot.Modules
 
         [Command("join", RunMode = RunMode.Async)]
         [Alias("j")]
-        [Summary("Joins voice channel")]
+        [Summary("Join voice channel")]
         public async Task JoinChannelAsync()
         {
             await ReplyAsync(_audioService.JoinChannel(Context));
@@ -37,7 +37,7 @@ namespace DBot.Modules
 
         [Command("Play")]
         [Alias("p")]
-        [Summary("Plays sounds from internet")]
+        [Summary("Play sounds from internet")]
         public async Task PlayAsync([Remainder] string searchQuery)
         {
             await ReplyAsync(await _audioService.PlayFromInternetAsync(searchQuery, Context));
@@ -52,7 +52,7 @@ namespace DBot.Modules
 
         [Command("Resume")]
         [Alias("r")]
-        [Summary("Resumes player")]
+        [Summary("Resume player")]
         public async Task ResumeAsync()
         {
             await ReplyAsync(await _audioService.ResumePlayerAsync(Context));
@@ -66,7 +66,7 @@ namespace DBot.Modules
         }
 
         [Command("Stop")]
-        [Summary("Stops player")]
+        [Summary("Stop player")]
         public async Task StopAsync()
         {
             await ReplyAsync(await _audioService.StopPlayerAsync(Context));
@@ -82,10 +82,18 @@ namespace DBot.Modules
 
         [Command("leave")]
         [Alias("l")]
-        [Summary("Leaves voice channel which bot is connected to")]
+        [Summary("Leave voice channel which bot is connected to")]
         public async Task LeaveChannelAsync()
         {
             await ReplyAsync(await _audioService.LeaveChannelAsync(Context));
+        }
+
+
+        [Command("kubica")]
+        [Summary("Play track from local file")]
+        public async Task PlayKubicaTracks([Remainder]string filename)
+        {
+            await ReplyAsync(await _audioService.PlayLocalFile(filename, Context));
         }
        
     }

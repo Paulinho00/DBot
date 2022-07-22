@@ -77,13 +77,14 @@ namespace DBot.Services
             }
 
             //Send request to lavalink to find song
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.YouTube, searchQuery);
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, searchQuery);
             if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
             {
                 return "Nic takiego nie znalazłem";
             }
 
             var player = _lavaNode.GetPlayer(context.Guild);
+            await player.UpdateVolumeAsync(100);
             string message = null;
 
             //Check if found playlist
@@ -307,6 +308,55 @@ namespace DBot.Services
         private async Task OnTrackStarted(TrackStartEventArgs arg)
         {
             await arg.Player.TextChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
+        }
+
+        /// <summary>
+        /// Plays track from local file
+        /// </summary>
+        /// <param name="fileName">file to be played</param>
+        /// <param name="context">Context of command</param>
+        /// <returns>Message of succesful play or cause of not playing</returns>
+        public async Task<string> PlayLocalFile(string filename, SocketCommandContext context)
+        {
+            string path = @"C:\Users\Paweł\source\repos\DBot\DBot\Resources\";
+
+            if (!_lavaNode.HasPlayer(context.Guild))
+            {
+                JoinChannel(context);
+            }
+
+            if (!_lavaNode.TryGetPlayer(context.Guild, out var player))
+            {
+                return "Nie jestem na żadnym kanale";
+            }
+
+            await player.UpdateVolumeAsync(200);
+
+            if(player.PlayerState == PlayerState.Playing)
+            {
+                return "Ale widzisz że gram?";
+            }
+
+            if (player.PlayerState == PlayerState.Paused)
+            {
+                return "Zapauzowany jestem";
+            }
+
+            //Send request to lavalink to find song
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, path + filename + ".mp3");
+
+            if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+            {
+                return "Co ty wymyślasz, nie ma nic takiego";
+            }
+
+            await player.PlayAsync(x =>
+            {
+                x.Track = searchResponse.Tracks.FirstOrDefault();
+                x.ShouldPause = false;
+            });
+
+            return "Puszczone";
         }
     }
 }
