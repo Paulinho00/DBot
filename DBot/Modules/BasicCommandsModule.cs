@@ -52,7 +52,7 @@ namespace DBot.Modules
         /// <returns></returns>
         [Command("pingpong", RunMode = RunMode.Async)]
         [Summary("pinguje dziesięć razy wybraną osobę")]
-        public async Task PingTenTimesUser([Remainder] SocketUser user = null)
+        public async Task PingTenTimesUserAsync([Remainder] SocketUser user = null)
         {
             if (user == null) await ReplyAsync("Nie ma takiego użytkownika");
             else
@@ -73,7 +73,7 @@ namespace DBot.Modules
         /// <returns></returns>
         [Command("draw")]
         [Summary("losuje gre")]
-        public async Task DrawGame([Remainder][Summary("lista gier")] string gamesName)
+        public async Task DrawGameAsync([Remainder][Summary("lista gier")] string gamesName)
         {
             string[] games = gamesName.Split(" ");
             Random random = new Random();
@@ -86,55 +86,95 @@ namespace DBot.Modules
         /// commands -> display all commands with parameter, aliases and desc
         /// </summary>
         /// <returns></returns>
-        [Command("help")]
+        [Command("all")]
         [Summary("lista komend i możliwych dźwieków")]
-        [Alias("h")]
-        public async Task DisplayAllCommands()
+        public async Task DisplayAllCommandsAsync()
         {
             List<CommandInfo> commandInfos = _commandService.Commands.ToList();
             var embed = new EmbedBuilder();
             embed.WithTitle("Komendy");
             embed.WithColor(Color.Red);
+
             foreach (CommandInfo command in commandInfos) {
+                //Field title with command name, aliases and parameters
+                var commandTitle = GetCommandNameAliasesAndParameters(command);
 
-                //Field title with command name and parameters
-                StringBuilder commandTitle = new StringBuilder(command.Name);
-
-                for (int i = 1; i < command.Aliases.Count; i++)
-                {
-                    commandTitle.Append(" / " + command.Aliases[i].ToString());
-                }
-
-                foreach (var parameter in command.Parameters) {
-                    if (parameter.IsOptional)
-                    {
-                        commandTitle.Append($" `[{parameter.Name}]`");
-                    }
-                    else
-                    {
-                        commandTitle.Append($" `{parameter.Name}`");
-                    }
-                   
-                }
-
-                //Field desc with aliases and description
+                //Field desc with description
                 StringBuilder commandDesc = new StringBuilder();
                 commandDesc.AppendLine("\n" + command.Summary ?? "Nie ma opisu");
-                embed.AddField(commandTitle.ToString() , commandDesc.ToString());
+                embed.AddField(commandTitle, commandDesc.ToString());
             }
 
             //Creates list of all possible sounds from local files
             var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
+
             StringBuilder filesNameFormated = new StringBuilder();
             foreach (string filename in filesName)
             {
                 var formatedFilename = filename.Substring(0, filename.Length - 4);
                 filesNameFormated.Append("`" + formatedFilename + "` ");
             }
+
             //Field with all possible sounds from local files
             embed.AddField("Dźwięki", filesNameFormated.ToString());
 
             await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("help")]
+        [Alias("h")]
+        [Summary("Pokazuje szczegóły konkretnej komendy")]
+        public async Task DisplayCommandDetailsAsync([Remainder] string command)
+        {
+            CommandInfo? commandInfo = _commandService.Commands.FirstOrDefault(c => c.Name == command);
+
+            if (commandInfo == null)
+            {
+                await ReplyAsync("Nie ma takiej komendy");
+                return;
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Red);
+
+            //Embed's field title with command name, aliases and parameters
+            string title = GetCommandNameAliasesAndParameters(commandInfo);
+
+            //Embed's field title with description
+            embed.AddField(title, "\n" + commandInfo.Summary ?? "Nie ma opisu");
+            await ReplyAsync(embed: embed.Build());
+
+
+        }
+
+        /// <summary>
+        /// Returns formated string with command name, aliases and parameters
+        /// </summary>
+        /// <param name="command">commandInfo for string</param>
+        /// <returns>formated string with command name, aliases and parameters</returns>
+        private string GetCommandNameAliasesAndParameters(CommandInfo command)
+        {
+            StringBuilder commandTitle = new StringBuilder(command.Name);
+
+            for (int i = 1; i < command.Aliases.Count; i++)
+            {
+                commandTitle.Append(" / " + command.Aliases[i].ToString());
+            }
+
+            foreach (var parameter in command.Parameters)
+            {
+                if (parameter.IsOptional)
+                {
+                    commandTitle.Append($" `[{parameter.Name}]`");
+                }
+                else
+                {
+                    commandTitle.Append($" `{parameter.Name}`");
+                }
+
+            }
+
+            return commandTitle.ToString();
         }
     }
 }
