@@ -83,7 +83,7 @@ namespace DBot.Modules
 
 
         /// <summary>
-        /// commands -> display all commands with parameter, aliases and desc
+        /// all -> display all commands with parameter, aliases and desc
         /// </summary>
         /// <returns></returns>
         [Command("all")]
@@ -105,22 +105,17 @@ namespace DBot.Modules
                 embed.AddField(commandTitle, commandDesc.ToString());
             }
 
-            //Creates list of all possible sounds from local files
-            var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
-
-            StringBuilder filesNameFormated = new StringBuilder();
-            foreach (string filename in filesName)
-            {
-                var formatedFilename = filename.Substring(0, filename.Length - 4);
-                filesNameFormated.Append("`" + formatedFilename + "` ");
-            }
-
             //Field with all possible sounds from local files
-            embed.AddField("Dźwięki", filesNameFormated.ToString());
+            embed.AddField("Dźwięki", GetAllSoundsFromLocalFiles());
 
             await ReplyAsync(embed: embed.Build());
         }
 
+        /// <summary>
+        /// Display details of given command
+        /// </summary>
+        /// <param name="command">displays details of this command</param>
+        /// <returns></returns>
         [Command("help")]
         [Alias("h")]
         [Summary("Pokazuje szczegóły konkretnej komendy")]
@@ -145,6 +140,24 @@ namespace DBot.Modules
             await ReplyAsync(embed: embed.Build());
 
 
+        }
+
+        /// <summary>
+        /// Displays all possible sounds from local files
+        /// </summary>
+        /// <returns></returns>
+        [Command("sounds")]
+        [Alias("s")]
+        [Summary("wyświetla wszystkie możliwe dźwięki")]
+        public async Task DisplayLocalFilesSounds()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Red);
+
+            //Field with all possible sounds from local files
+            embed.AddField("Dźwięki", GetAllSoundsFromLocalFiles());
+
+            await ReplyAsync(embed: embed.Build());
         }
 
         /// <summary>
@@ -175,6 +188,24 @@ namespace DBot.Modules
             }
 
             return commandTitle.ToString();
+        }
+
+        /// <summary>
+        /// Returns string with names of all possible sounds
+        /// </summary>
+        /// <returns></returns>
+        private string GetAllSoundsFromLocalFiles()
+        {
+            //Creates list of all possible sounds from local files
+            var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
+
+            StringBuilder filesNameFormated = new StringBuilder();
+            foreach (string filename in filesName)
+            {
+                var formatedFilename = filename.Substring(0, filename.Length - 4);
+                filesNameFormated.Append("`" + formatedFilename + "` ");
+            }
+            return filesNameFormated.ToString();
         }
     }
 }
