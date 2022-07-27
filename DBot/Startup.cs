@@ -32,7 +32,7 @@ namespace DBot
             await _commandHandler.InitCommandsAsync();
 
             //Change token source dependent on your way of storing
-            await _clientManager.SocketClient.LoginAsync(TokenType.Bot, File.ReadAllText("../../../config.txt").Trim());
+            await _clientManager.SocketClient.LoginAsync(TokenType.Bot, File.ReadAllText("config.txt").Trim());
             await _clientManager.SocketClient.StartAsync();
 
             //Block using task until the program is closed

@@ -1,4 +1,4 @@
-﻿# DBot - discord bot with basic audio functionality
+# DBot - discord bot with basic audio functionality
 Simple discord bot created with Discord.Net, Lavalink, Victoria with simple commands and audio functionality.
 ## Table of contents
 * [Introduction](#Introduction)
@@ -22,8 +22,6 @@ Project uses:
 * Playing audio from local files located in Resources folder
 
 TODO:
-* help command to display all commands
-* show all possible playable local files
 * command for delayed start of playing tracks
 
 
@@ -35,8 +33,9 @@ Go to Lavalink folder in console and run server by typing following command:
 java -jar .\475506-Lavalink.jar
 ```
 Then you have to create your own `config.txt` file with your bot's token. It can be generated at Discord.com -> Developers Portal -> Applications(choose your bot) -> Bot.
+You have to place `config.txt` file in the same directory as your bot's `.exe` file.\
 Finally you run DBot, with Visual Studio or running it from command line using `dotnet run`.\
-BEWARE! To run project from Command line you HAVE TO change path to config.txt in  `MainAsync` method in `Startup.cs` in calling `LoginAsync` method.
+IMPORTANT! You have to move `Resources` folder to destination of your  `.exe` file. If you run bot with VS, `.exe` file is in project folder in `bin\Debug\` or `bin\Release\`
 
 If you want to play your local files, you need to put `.mp3` file in `Resources` folder.
 

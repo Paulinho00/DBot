@@ -15,6 +15,7 @@ namespace DBot.Services
     public class AudioService
     {
         private readonly LavaNode _lavaNode;
+        private string _path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\";
 
         public AudioService(LavaNode lavaNode)
         {
@@ -77,7 +78,7 @@ namespace DBot.Services
             }
 
             //Send request to lavalink to find song
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, searchQuery);
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.YouTube, searchQuery);
             if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
             {
                 return "Nic takiego nie znalazłem";
@@ -318,7 +319,6 @@ namespace DBot.Services
         /// <returns>Message of succesful play or cause of not playing</returns>
         public async Task<string> PlayLocalFile(string filename, SocketCommandContext context)
         {
-            string path = @"C:\Users\Paweł\source\repos\DBot\DBot\Resources\";
 
             if (!_lavaNode.HasPlayer(context.Guild))
             {
@@ -343,7 +343,7 @@ namespace DBot.Services
             }
 
             //Send request to lavalink to find song
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, path + filename + ".mp3");
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, _path + filename + ".mp3");
 
             if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
             {
@@ -366,7 +366,7 @@ namespace DBot.Services
         public string GetAllSoundsFromLocalFiles()
         {
             //Creates list of all possible sounds from local files
-            var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
+            var filesName = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
 
             StringBuilder filesNameFormated = new StringBuilder();
             foreach (string filename in filesName)
