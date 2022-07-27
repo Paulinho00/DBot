@@ -90,11 +90,30 @@ namespace DBot.Modules
 
 
         [Command("kubica")]
+        [Alias("k")]
         [Summary("gra zdefiniowane dźwięki ")]
         public async Task PlayLocalTracks([Remainder]string filename)
         {
             await ReplyAsync(await _audioService.PlayLocalFile(filename, Context));
         }
-       
+
+        /// <summary>
+        /// Displays all possible sounds from local files
+        /// </summary>
+        /// <returns></returns>
+        [Command("sounds")]
+        [Alias("s")]
+        [Summary("wyświetla wszystkie możliwe dźwięki")]
+        public async Task DisplayLocalFilesSounds()
+        {
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Blue);
+
+            //Field with all possible sounds from local files
+            embed.AddField("Dźwięki", _audioService.GetAllSoundsFromLocalFiles());
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
     }
 }

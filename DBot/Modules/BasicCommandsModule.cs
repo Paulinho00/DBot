@@ -13,11 +13,13 @@ namespace DBot.Modules
     public class BasicCommandsModule : ModuleBase<SocketCommandContext>
     {
         private CommandService _commandService;
+        private AudioService _audioService;
 
 
-        public BasicCommandsModule(CommandService commandService)
+        public BasicCommandsModule(CommandService commandService, AudioService audioService)
         {
             _commandService = commandService;
+            _audioService = audioService;
         }
 
         /// <summary>
@@ -91,9 +93,12 @@ namespace DBot.Modules
         public async Task DisplayAllCommandsAsync()
         {
             List<CommandInfo> commandInfos = _commandService.Commands.ToList();
-            var embed = new EmbedBuilder();
-            embed.WithTitle("Komendy");
-            embed.WithColor(Color.Red);
+            var embedBasicCommands = new EmbedBuilder();
+            var embedAudioCommands = new EmbedBuilder();
+            embedBasicCommands.WithTitle("Podstawowe komendy");
+            embedAudioCommands.WithTitle("Komendy dźwiękowe");
+            embedAudioCommands.WithColor(Color.Blue);
+            embedBasicCommands.WithColor(Color.Red);
 
             foreach (CommandInfo command in commandInfos) {
                 //Field title with command name, aliases and parameters
@@ -102,13 +107,22 @@ namespace DBot.Modules
                 //Field desc with description
                 StringBuilder commandDesc = new StringBuilder();
                 commandDesc.AppendLine("\n" + command.Summary ?? "Nie ma opisu");
-                embed.AddField(commandTitle, commandDesc.ToString());
+
+                if (command.Module.Name == "BasicCommandsModule")
+                {
+                    embedBasicCommands.AddField(commandTitle, commandDesc.ToString());
+                }
+                else if(command.Module.Name == "AudioModule")
+                {
+                    embedAudioCommands.AddField(commandTitle, commandDesc.ToString());
+                }
             }
 
             //Field with all possible sounds from local files
-            embed.AddField("Dźwięki", GetAllSoundsFromLocalFiles());
+            embedAudioCommands.AddField("Dźwięki", _audioService.GetAllSoundsFromLocalFiles());
 
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync(embed: embedBasicCommands.Build());
+            await ReplyAsync(embed: embedAudioCommands.Build());
         }
 
         /// <summary>
@@ -143,24 +157,6 @@ namespace DBot.Modules
         }
 
         /// <summary>
-        /// Displays all possible sounds from local files
-        /// </summary>
-        /// <returns></returns>
-        [Command("sounds")]
-        [Alias("s")]
-        [Summary("wyświetla wszystkie możliwe dźwięki")]
-        public async Task DisplayLocalFilesSounds()
-        {
-            var embed = new EmbedBuilder();
-            embed.WithColor(Color.Red);
-
-            //Field with all possible sounds from local files
-            embed.AddField("Dźwięki", GetAllSoundsFromLocalFiles());
-
-            await ReplyAsync(embed: embed.Build());
-        }
-
-        /// <summary>
         /// Returns formated string with command name, aliases and parameters
         /// </summary>
         /// <param name="command">commandInfo for string</param>
@@ -188,24 +184,6 @@ namespace DBot.Modules
             }
 
             return commandTitle.ToString();
-        }
-
-        /// <summary>
-        /// Returns string with names of all possible sounds
-        /// </summary>
-        /// <returns></returns>
-        private string GetAllSoundsFromLocalFiles()
-        {
-            //Creates list of all possible sounds from local files
-            var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
-
-            StringBuilder filesNameFormated = new StringBuilder();
-            foreach (string filename in filesName)
-            {
-                var formatedFilename = filename.Substring(0, filename.Length - 4);
-                filesNameFormated.Append("`" + formatedFilename + "` ");
-            }
-            return filesNameFormated.ToString();
         }
     }
 }

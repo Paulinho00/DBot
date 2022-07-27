@@ -358,5 +358,23 @@ namespace DBot.Services
 
             return "Puszczone";
         }
+
+        /// <summary>
+        /// Returns string with names of all possible sounds
+        /// </summary>
+        /// <returns></returns>
+        public string GetAllSoundsFromLocalFiles()
+        {
+            //Creates list of all possible sounds from local files
+            var filesName = Directory.GetFiles(@"C:\Users\Paweł\source\repos\DBot\DBot\Resources\").Select(f => Path.GetFileName(f));
+
+            StringBuilder filesNameFormated = new StringBuilder();
+            foreach (string filename in filesName)
+            {
+                var formatedFilename = filename.Substring(0, filename.Length - 4);
+                filesNameFormated.Append("`" + formatedFilename + "` ");
+            }
+            return filesNameFormated.ToString();
+        }
     }
 }
