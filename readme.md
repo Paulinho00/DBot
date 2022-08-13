@@ -23,6 +23,7 @@ Project uses:
 
 TODO:
 * command for delayed start of playing tracks
+* basic audio commands in the form of embed and buttons
 
 
 ## Launch
