@@ -14,7 +14,8 @@ namespace DBot.Services
 {
     public class AudioService
     {
-        private readonly LavaNode _lavaNode;
+        private string[] supportedFormats = { "mp3", "wav" };
+        private LavaNode _lavaNode;
         private string _path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\";
 
         public AudioService(LavaNode lavaNode)
@@ -288,8 +289,15 @@ namespace DBot.Services
             {
                 return;
             }
-
             var player = args.Player;
+            var track = args.Track;
+            var test = track.Url.Substring(track.Url.Length - 3);
+
+            //If local sound was played, don't send messages about queue
+            if (supportedFormats.Contains(track.Url.Substring(track.Url.Length - 3))){
+                return;
+            }
+
             if (!player.Queue.TryDequeue(out var lavaTrack))
             {
                 await player.TextChannel.SendMessageAsync("Zagrano wszystko z kolejki, dawaj kolejne");
@@ -308,6 +316,12 @@ namespace DBot.Services
 
         private async Task OnTrackStarted(TrackStartEventArgs arg)
         {
+            var track = arg.Track;
+            if (supportedFormats.Contains(track.Url.Substring(track.Url.Length - 3)))
+            {
+                return;
+            }
+
             await arg.Player.TextChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
         }
 
@@ -319,7 +333,6 @@ namespace DBot.Services
         /// <returns>Message of succesful play or cause of not playing</returns>
         public async Task<string> PlayLocalFile(string filename, SocketCommandContext context)
         {
-
             if (!_lavaNode.HasPlayer(context.Guild))
             {
                 JoinChannel(context);
