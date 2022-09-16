@@ -373,21 +373,28 @@ namespace DBot.Services
         }
 
         /// <summary>
-        /// Returns string with names of all possible sounds
+        /// Returns list of strings (which do not exceed length limit of embed field) with sounds names for fields
         /// </summary>
         /// <returns></returns>
-        public string GetAllSoundsFromLocalFiles()
+        public List<string> GetAllSoundsFromLocalFiles()
         {
             //Creates list of all possible sounds from local files
             var filesName = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
 
+            List<string> fields = new List<string>();
             StringBuilder filesNameFormated = new StringBuilder();
             foreach (string filename in filesName)
             {
                 var formatedFilename = filename.Substring(0, filename.Length - 4);
+                if(filesNameFormated.Length + formatedFilename.Length > 1024)
+                {
+                    fields.Add(filesNameFormated.ToString());
+                    filesNameFormated.Clear();
+                }
                 filesNameFormated.Append("`" + formatedFilename + "` ");
             }
-            return filesNameFormated.ToString();
+            fields.Add(filesNameFormated.ToString());
+            return fields;
         }
     }
 }

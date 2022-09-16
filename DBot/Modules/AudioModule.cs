@@ -108,9 +108,23 @@ namespace DBot.Modules
         {
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Blue);
+            List<string> fieldsValues = _audioService.GetAllSoundsFromLocalFiles();
 
-            //Field with all possible sounds from local files
-            embed.AddField("Dźwięki", _audioService.GetAllSoundsFromLocalFiles());
+            //Add field title depending on fields number
+            if (fieldsValues.Count == 1)
+            {
+                embed.AddField("Dźwięki", fieldsValues[0]);
+            }
+            else
+            {
+                //Adds all fields from list to embed
+                for (int fieldNumber = 1; fieldNumber <= fieldsValues.Count; fieldNumber++)
+                {
+                    embed.AddField("Dźwięki cz. " + fieldNumber, fieldsValues[fieldNumber - 1]);
+                }
+            }
+            
+            
 
             await ReplyAsync(embed: embed.Build());
         }
