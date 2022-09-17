@@ -373,28 +373,44 @@ namespace DBot.Services
         }
 
         /// <summary>
-        /// Returns list of strings (which do not exceed length limit of embed field) with sounds names for fields
+        /// Returns dictionary with category names as keys and string with all sounds in corresponding category as value
         /// </summary>
         /// <returns></returns>
-        public List<string> GetAllSoundsFromLocalFiles()
+        public Dictionary<string, string> GetAllSoundsFromLocalFiles()
         {
-            //Creates list of all possible sounds from local files
-            var filesName = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
+            Dictionary<string, string> categoriesWithSounds = new Dictionary<string, string>();
+            string[] categories = Directory.GetDirectories(_path);
 
-            List<string> fields = new List<string>();
-            StringBuilder filesNameFormated = new StringBuilder();
-            foreach (string filename in filesName)
+            //Adds each category with its sounds to dictionary
+            foreach (string category in categories)
             {
-                var formatedFilename = filename.Substring(0, filename.Length - 4);
-                if(filesNameFormated.Length + formatedFilename.Length > 1024)
+                var filenames = Directory.GetFiles(category).Select(f => Path.GetFileName(f));
+                filenames.OrderBy(filename => filename);
+                StringBuilder filenamesFormated = new StringBuilder();
+                foreach (string filename in filenames)
                 {
-                    fields.Add(filesNameFormated.ToString());
-                    filesNameFormated.Clear();
+                    var formatedFilename = filename.Substring(0, filename.Length - 4);
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
                 }
-                filesNameFormated.Append("`" + formatedFilename + "` ");
+                string categoryName = Path.GetFileName(category);
+                categoriesWithSounds.Add(categoryName, filenamesFormated.ToString());
             }
-            fields.Add(filesNameFormated.ToString());
-            return fields;
+            
+            
+            //Checks if there are sounds without category and adds them to dictionary
+            var filenamesWithoutCategory = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
+            if (filenamesWithoutCategory.Count() != 0)
+            {
+                filenamesWithoutCategory.OrderBy(filename => filename);
+                StringBuilder filenamesFormated = new StringBuilder();
+                foreach (string filename in filenamesWithoutCategory)
+                {
+                    var formatedFilename = filename.Substring(0, filename.Length - 4);
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
+                }
+                categoriesWithSounds.Add("Inne", filenamesFormated.ToString());
+            }
+            return categoriesWithSounds;
         }
     }
 }

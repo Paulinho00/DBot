@@ -118,8 +118,12 @@ namespace DBot.Modules
                 }
             }
 
-            //Field with all possible sounds from local files
-            embedAudioCommands.AddField("Dźwięki", _audioService.GetAllSoundsFromLocalFiles());
+            //Add each category and its sounds to fields 
+            Dictionary<string, string> soundsWithCategories = _audioService.GetAllSoundsFromLocalFiles();
+            foreach (string category in soundsWithCategories.Keys)
+            {
+                embedAudioCommands.AddField(category, soundsWithCategories[category]);
+            }
 
             await ReplyAsync(embed: embedBasicCommands.Build());
             await ReplyAsync(embed: embedAudioCommands.Build());
