@@ -22,7 +22,7 @@ Project uses:
 * Playing audio from local files located in Resources folder
 
 TODO:
-* command for delayed start of playing tracks
+* add categories to be displayed in all sounds embed message
 * basic audio commands in the form of embed and buttons
 
 
