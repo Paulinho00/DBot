@@ -356,7 +356,8 @@ namespace DBot.Services
             }
 
             //Send request to lavalink to find song
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, _path + filename + ".mp3");
+            var soundFilePath = Directory.GetFiles(_path, filename + ".mp3", SearchOption.AllDirectories);
+            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, soundFilePath[0]);
 
             if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
             {

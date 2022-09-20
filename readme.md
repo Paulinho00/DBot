@@ -38,5 +38,5 @@ You have to place `config.txt` file in the same directory as your bot's `.exe` f
 Finally you run DBot, with Visual Studio or running it from command line using `dotnet run`.\
 IMPORTANT! You have to move `Resources` folder to destination of your  `.exe` file. If you run bot with VS, `.exe` file is in project folder in `bin\Debug\` or `bin\Release\`
 
-If you want to play your local files, you need to put `.mp3` file in `Resources` folder.
+If you want to play your local files, you need to put `.mp3` file in `Resources` folder. If you want to have more clear view of your all sounds, you can put your sounds in folders inside `Resources` folder, so to be displayed in seperate fields in embed message when typing `sounds` command.
 
