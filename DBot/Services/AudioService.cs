@@ -385,16 +385,12 @@ namespace DBot.Services
             //Adds each category with its sounds to dictionary
             foreach (string category in categories)
             {
-                var filenames = Directory.GetFiles(category).Select(f => Path.GetFileName(f));
-                filenames.OrderBy(filename => filename);
-                StringBuilder filenamesFormated = new StringBuilder();
-                foreach (string filename in filenames)
+               var allSoundsFromCategory = GetAllSoundsFromCategory(category);
+                foreach (string parts in allSoundsFromCategory.Keys)
                 {
-                    var formatedFilename = filename.Substring(0, filename.Length - 4);
-                    filenamesFormated.Append("`" + formatedFilename + "` ");
+                    categoriesWithSounds.Add(parts, allSoundsFromCategory[parts]);
                 }
-                string categoryName = Path.GetFileName(category);
-                categoriesWithSounds.Add(categoryName, filenamesFormated.ToString());
+
             }
             
             
@@ -413,5 +409,55 @@ namespace DBot.Services
             }
             return categoriesWithSounds;
         }
+
+
+        /// <summary>
+        /// Returns dictionary with all sounds filenames assigned to category, with category as key or category parts as key when filenames list exceed 1024 characters 
+        /// </summary>
+        /// <param name="categoryPath"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetAllSoundsFromCategory(string categoryPath)
+        {
+            Dictionary<string, string> categorySounds = new Dictionary<string, string>();
+
+            var filenames = Directory.GetFiles(categoryPath).Select(f => Path.GetFileName(f));
+            filenames.OrderBy(filename => filename);
+            StringBuilder filenamesFormated = new StringBuilder();
+            string categoryName = Path.GetFileName(categoryPath);
+            int categoryPartCounter = 1;
+
+
+            foreach (string filename in filenames)
+            {
+                var formatedFilename = filename.Substring(0, filename.Length - 4);
+
+                //Checks if filenames list exceed permitted 1024 characters after insertion of new filename
+                if (filenamesFormated.Length + formatedFilename.Length > 1024)
+                {
+                    //Add filenames in parts
+                    categorySounds.Add(categoryName + $" cz. {categoryPartCounter}", filenamesFormated.ToString());
+                    filenamesFormated.Clear();
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
+                    categoryPartCounter++;
+                }
+                else
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
+            }
+
+
+            //Checks if there is more than one part, if no then add single part with all filenames
+            if (categoryPartCounter == 1)
+            {
+                categorySounds.Add(categoryName, filenamesFormated.ToString());
+            }
+            else
+            {
+                categorySounds.Add(categoryName + $" cz. {categoryPartCounter}", filenamesFormated.ToString());
+            }
+
+            return categorySounds;
+        }
     }
+
+
 }
