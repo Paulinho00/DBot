@@ -357,20 +357,27 @@ namespace DBot.Services
 
             //Send request to lavalink to find song
             var soundFilePath = Directory.GetFiles(_path, filename + ".mp3", SearchOption.AllDirectories);
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, soundFilePath[0]);
 
-            if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+            if (soundFilePath.Length != 0)
             {
-                return "Co ty wymyślasz, nie ma nic takiego";
+                var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, soundFilePath[0]);
+
+                if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+                {
+                    return "Co ty wymyślasz, nie ma nic takiego";
+                }
+
+                await player.PlayAsync(x =>
+                {
+                    x.Track = searchResponse.Tracks.FirstOrDefault();
+                    x.ShouldPause = false;
+                });
+
+                return "Puszczone";
+
             }
-
-            await player.PlayAsync(x =>
-            {
-                x.Track = searchResponse.Tracks.FirstOrDefault();
-                x.ShouldPause = false;
-            });
-
-            return "Puszczone";
+            else
+                return "Co ty wymyślasz, nie ma nic takiego";
         }
 
         /// <summary>
