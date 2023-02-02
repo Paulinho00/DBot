@@ -387,25 +387,18 @@ namespace DBot.Services
             {
                var allSoundsFromCategory = GetAllSoundsFromCategory(category);
                 foreach (string parts in allSoundsFromCategory.Keys)
-                {
                     categoriesWithSounds.Add(parts, allSoundsFromCategory[parts]);
-                }
+
 
             }
             
             
             //Checks if there are sounds without category and adds them to dictionary
-            var filenamesWithoutCategory = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
-            if (filenamesWithoutCategory.Count() != 0)
+            var filenamesWithoutCategory = GetAllSoundsFromCategory(_path);
+            if (filenamesWithoutCategory[filenamesWithoutCategory.Keys.First()].Length != 0)
             {
-                filenamesWithoutCategory.OrderBy(filename => filename);
-                StringBuilder filenamesFormated = new StringBuilder();
-                foreach (string filename in filenamesWithoutCategory)
-                {
-                    var formatedFilename = filename.Substring(0, filename.Length - 4);
-                    filenamesFormated.Append("`" + formatedFilename + "` ");
-                }
-                categoriesWithSounds.Add("Inne", filenamesFormated.ToString());
+                foreach(string parts in filenamesWithoutCategory.Keys)
+                    categoriesWithSounds.Add(parts, filenamesWithoutCategory[parts]);
             }
             return categoriesWithSounds;
         }
@@ -424,6 +417,10 @@ namespace DBot.Services
             filenames.OrderBy(filename => filename);
             StringBuilder filenamesFormated = new StringBuilder();
             string categoryName = Path.GetFileName(categoryPath);
+
+            if (String.IsNullOrWhiteSpace(categoryName))
+                categoryName = "Inne";
+
             int categoryPartCounter = 1;
 
 
