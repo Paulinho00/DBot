@@ -322,7 +322,7 @@ namespace DBot.Services
                 return;
             }
 
-            await arg.Player.TextChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
+            await arg.Player.VoiceChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
         }
 
         /// <summary>
