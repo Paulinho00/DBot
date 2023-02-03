@@ -322,7 +322,7 @@ namespace DBot.Services
                 return;
             }
 
-            await arg.Player.TextChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
+            await arg.Player.VoiceChannel.SendMessageAsync($"Teraz grane: {arg.Track.Title}");
         }
 
         /// <summary>
@@ -357,20 +357,27 @@ namespace DBot.Services
 
             //Send request to lavalink to find song
             var soundFilePath = Directory.GetFiles(_path, filename + ".mp3", SearchOption.AllDirectories);
-            var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, soundFilePath[0]);
 
-            if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+            if (soundFilePath.Length != 0)
             {
-                return "Co ty wymyślasz, nie ma nic takiego";
+                var searchResponse = await _lavaNode.SearchAsync(SearchType.Direct, soundFilePath[0]);
+
+                if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+                {
+                    return "Co ty wymyślasz, nie ma nic takiego";
+                }
+
+                await player.PlayAsync(x =>
+                {
+                    x.Track = searchResponse.Tracks.FirstOrDefault();
+                    x.ShouldPause = false;
+                });
+
+                return "Puszczone";
+
             }
-
-            await player.PlayAsync(x =>
-            {
-                x.Track = searchResponse.Tracks.FirstOrDefault();
-                x.ShouldPause = false;
-            });
-
-            return "Puszczone";
+            else
+                return "Co ty wymyślasz, nie ma nic takiego";
         }
 
         /// <summary>
@@ -385,33 +392,76 @@ namespace DBot.Services
             //Adds each category with its sounds to dictionary
             foreach (string category in categories)
             {
-                var filenames = Directory.GetFiles(category).Select(f => Path.GetFileName(f));
-                filenames.OrderBy(filename => filename);
-                StringBuilder filenamesFormated = new StringBuilder();
-                foreach (string filename in filenames)
-                {
-                    var formatedFilename = filename.Substring(0, filename.Length - 4);
-                    filenamesFormated.Append("`" + formatedFilename + "` ");
-                }
-                string categoryName = Path.GetFileName(category);
-                categoriesWithSounds.Add(categoryName, filenamesFormated.ToString());
+               var allSoundsFromCategory = GetAllSoundsFromCategory(category);
+                foreach (string parts in allSoundsFromCategory.Keys)
+                    categoriesWithSounds.Add(parts, allSoundsFromCategory[parts]);
+
+
             }
             
             
             //Checks if there are sounds without category and adds them to dictionary
-            var filenamesWithoutCategory = Directory.GetFiles(_path).Select(f => Path.GetFileName(f));
-            if (filenamesWithoutCategory.Count() != 0)
+            var filenamesWithoutCategory = GetAllSoundsFromCategory(_path);
+            if (filenamesWithoutCategory[filenamesWithoutCategory.Keys.First()].Length != 0)
             {
-                filenamesWithoutCategory.OrderBy(filename => filename);
-                StringBuilder filenamesFormated = new StringBuilder();
-                foreach (string filename in filenamesWithoutCategory)
-                {
-                    var formatedFilename = filename.Substring(0, filename.Length - 4);
-                    filenamesFormated.Append("`" + formatedFilename + "` ");
-                }
-                categoriesWithSounds.Add("Inne", filenamesFormated.ToString());
+                foreach(string parts in filenamesWithoutCategory.Keys)
+                    categoriesWithSounds.Add(parts, filenamesWithoutCategory[parts]);
             }
             return categoriesWithSounds;
         }
+
+
+        /// <summary>
+        /// Returns dictionary with all sounds filenames assigned to category, with category as key or category parts as key when filenames list exceed 1024 characters 
+        /// </summary>
+        /// <param name="categoryPath"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetAllSoundsFromCategory(string categoryPath)
+        {
+            Dictionary<string, string> categorySounds = new Dictionary<string, string>();
+
+            var filenames = Directory.GetFiles(categoryPath).Select(f => Path.GetFileName(f));
+            filenames.OrderBy(filename => filename);
+            StringBuilder filenamesFormated = new StringBuilder();
+            string categoryName = Path.GetFileName(categoryPath);
+
+            if (String.IsNullOrWhiteSpace(categoryName))
+                categoryName = "Inne";
+
+            int categoryPartCounter = 1;
+
+
+            foreach (string filename in filenames)
+            {
+                var formatedFilename = filename.Substring(0, filename.Length - 4);
+
+                //Checks if filenames list exceed permitted 1024 characters after insertion of new filename
+                if (filenamesFormated.Length + formatedFilename.Length > 1024)
+                {
+                    //Add filenames in parts
+                    categorySounds.Add(categoryName + $" cz. {categoryPartCounter}", filenamesFormated.ToString());
+                    filenamesFormated.Clear();
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
+                    categoryPartCounter++;
+                }
+                else
+                    filenamesFormated.Append("`" + formatedFilename + "` ");
+            }
+
+
+            //Checks if there is more than one part, if no then add single part with all filenames
+            if (categoryPartCounter == 1)
+            {
+                categorySounds.Add(categoryName, filenamesFormated.ToString());
+            }
+            else
+            {
+                categorySounds.Add(categoryName + $" cz. {categoryPartCounter}", filenamesFormated.ToString());
+            }
+
+            return categorySounds;
+        }
     }
+
+
 }
