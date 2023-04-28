@@ -2,9 +2,8 @@
 
 public class Program
 {
-
-    public static Task Main(string[] args)
+    public static void Main(string[] args)
     {
-        return new Startup().MainAsync();
+        
     }
 }
