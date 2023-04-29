@@ -5,9 +5,14 @@ namespace DBot.Services;
 
 public class AudioService
 {
-    private readonly string[] _supportedFormats = { "mp3", "wav" };
+    private readonly string[] _supportedFormats = { ".mp3", ".wav" };
     private readonly string _path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\Resources\";
 
+    
+    /// <summary>
+    /// Returns all sounds from Resources directory
+    /// </summary>
+    /// <returns></returns>
     public Dictionary<string, string> GetAllSoundsFromLocalFiles()
     {
         
@@ -35,6 +40,33 @@ public class AudioService
                 categoriesWithSounds.Add(parts, filenamesWithoutCategory[parts]);
         }
         return categoriesWithSounds;
+    }
+
+    /// <summary>
+    /// Get path to a filename within a resources directory
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns>Full, absolute path</returns>
+    public FileInfo? GetFilePath(String fileName)
+    {
+        foreach (var format in _supportedFormats)
+        {
+            try
+            {
+                var soundFilePath = Directory.GetFiles(_path, fileName + format, SearchOption.AllDirectories);
+                if (soundFilePath.Any())
+                {
+                    FileInfo fileInfo = new FileInfo(soundFilePath[0]);
+                    return fileInfo;
+                }
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+        }
+        return null;
+
     }
     
     
@@ -89,7 +121,13 @@ public class AudioService
 
             return categorySounds;
         }
-    }
+
+    
+     public bool IsTrackIndetifierLocal(string identifier)
+     {
+         return identifier.StartsWith(_path);
+     }
+}
 
     
     
