@@ -1,29 +1,43 @@
-﻿using DBot;
+﻿using System.Reflection;
 using DisCatSharp;
+using DisCatSharp.CommandsNext;
 using DisCatSharp.Enums;
+using Microsoft.Extensions.Logging;
 
-public class Program
+namespace DBot
 {
-    public static void Main(string[] args)
+    public class Program
     {
-        MainAsync().GetAwaiter().GetResult();
-    }
-
-    static async Task MainAsync()
-    {
-        var discord = new DiscordClient(new DiscordConfiguration()
+        public static void Main(string[] args)
         {
-            Token = File.ReadAllText("config.txt").Trim(),
-            TokenType = TokenType.Bot,
-            Intents = DiscordIntents.Guilds |
-                      DiscordIntents.GuildMembers |
-                      DiscordIntents.GuildMessageReactions |
-                      DiscordIntents.GuildMessages |
-                      DiscordIntents.GuildVoiceStates |
-                      DiscordIntents.GuildPresences
-        });
+            MainAsync().GetAwaiter().GetResult();
+        }
 
-        await discord.ConnectAsync();
-        await Task.Delay(-1);
+        static async Task MainAsync()
+        {
+            var discord = new DiscordClient(new DiscordConfiguration()
+            {
+                Token = File.ReadAllText("config.txt").Trim(),
+                TokenType = TokenType.Bot,
+                Intents = DiscordIntents.Guilds |
+                          DiscordIntents.GuildMembers |
+                          DiscordIntents.GuildMessageReactions |
+                          DiscordIntents.GuildMessages |
+                          DiscordIntents.GuildVoiceStates |
+                          DiscordIntents.GuildPresences |
+                          DiscordIntents.MessageContent |
+                          DiscordIntents.AllUnprivileged,
+                MinimumLogLevel = LogLevel.Debug
+            });
+
+            var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
+            {
+                StringPrefixes = new List<string>() { "`" }
+            });
+
+            commands.RegisterCommands(Assembly.GetExecutingAssembly());
+            await discord.ConnectAsync();
+            await Task.Delay(-1);
+        }
     }
 }
