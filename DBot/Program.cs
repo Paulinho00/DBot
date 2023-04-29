@@ -1,7 +1,12 @@
 ﻿using System.Reflection;
+using DBot.CommandNextModules;
+using DBot.Services;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Enums;
+using DisCatSharp.Lavalink;
+using DisCatSharp.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace DBot
@@ -26,8 +31,9 @@ namespace DBot
                           DiscordIntents.GuildVoiceStates |
                           DiscordIntents.GuildPresences |
                           DiscordIntents.MessageContent |
-                          DiscordIntents.AllUnprivileged,
-                MinimumLogLevel = LogLevel.Debug
+                          DiscordIntents.GuildWebhooks |
+                          DiscordIntents.All,
+                          MinimumLogLevel = LogLevel.Debug
             });
 
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
@@ -35,9 +41,35 @@ namespace DBot
                 StringPrefixes = new List<string>() { "`" }
             });
 
-            commands.RegisterCommands(Assembly.GetExecutingAssembly());
+            commands.RegisterCommands<AudioCommandsModule>();
+            commands.RegisterCommands<BasicMessageCommandsModule>();
+
+            var lavalinkConfig = GetLavalinkConfiguration();
+            
+            var lavalink = discord.UseLavalink();
+            
             await discord.ConnectAsync();
+            await lavalink.ConnectAsync(lavalinkConfig);
             await Task.Delay(-1);
+        }
+
+
+        private static LavalinkConfiguration GetLavalinkConfiguration()
+        {
+            var endpoint = new ConnectionEndpoint()
+            {
+                Hostname = "127.0.0.1",
+                Port = 2333
+            };
+
+            var lavalinkConfig = new LavalinkConfiguration()
+            {
+                Password = "youshallnotpass",
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint
+            };
+
+            return lavalinkConfig;
         }
     }
 }

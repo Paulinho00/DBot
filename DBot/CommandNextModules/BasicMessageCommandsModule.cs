@@ -19,12 +19,10 @@ public class BasicMessageCommandsModule : BaseCommandModule
         if (user == null) await ctx.Channel.SendMessageAsync("Nie ma takiego użytkownika");
         else
         {
-            List<Task> pingTasks = new List<Task>();
             for (int i = 0; i < 10; i++)
             {
-                pingTasks.Add(ctx.Channel.SendMessageAsync($"<@{user.Id}>"));
+                await ctx.Channel.SendMessageAsync($"<@{user.Id}>");
             }
-            await Task.WhenAll(pingTasks);
         }
     }
     
