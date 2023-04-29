@@ -33,7 +33,10 @@ namespace DBot
                           DiscordIntents.MessageContent |
                           DiscordIntents.GuildWebhooks |
                           DiscordIntents.All,
-                          MinimumLogLevel = LogLevel.Debug
+                MinimumLogLevel = LogLevel.Debug,
+                ServiceProvider = new ServiceCollection()
+                    .AddTransient<AudioService>()
+                    .BuildServiceProvider()
             });
 
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration()

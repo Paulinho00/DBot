@@ -1,4 +1,5 @@
-﻿using DBot.Services;
+﻿
+using DBot.Services;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
@@ -9,6 +10,12 @@ namespace DBot.CommandNextModules;
 
 public class AudioCommandsModule : BaseCommandModule
 {
+    private readonly AudioService _audioService;
+
+    public AudioCommandsModule(AudioService audioService)
+    {
+        _audioService = audioService;
+    }
 
     [Command("join")]
     [Aliases("j")]
@@ -44,15 +51,22 @@ public class AudioCommandsModule : BaseCommandModule
         }
     }
 
-        
     [Command("sounds")]
     [Aliases("s")]
     [Description("wyświetla wszystkie możliwe dźwięki")]
     public async Task DisplayLocalFileSounds(CommandContext ctx, [RemainingText][Description("lista gier")] params string[] gamesName)
     {
-        Random random = new Random();
-        int indexOfGame = random.Next(gamesName.Length);
-        await ctx.RespondAsync($"Gra: {gamesName[indexOfGame]}");
+        Dictionary<string, string> fieldsValues = _audioService.GetAllSoundsFromLocalFiles();
+        var embed = new DiscordEmbedBuilder();
+        embed.Color = DiscordColor.IndianRed;
+        
+        //Add each category and its sounds to fields 
+        foreach(string category in fieldsValues.Keys)
+        {
+            var field = new DiscordEmbedField(category, fieldsValues[category]);
+            embed.AddField(field);
+        }
+        await ctx.Channel.SendMessageAsync(embed: embed.Build());
     }
     
     private async Task ConnectToVoiceChannel(CommandContext ctx)
