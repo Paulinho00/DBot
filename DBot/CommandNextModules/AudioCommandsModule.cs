@@ -15,6 +15,7 @@ public class AudioCommandsModule : BaseCommandModule
     private readonly Queue<LavalinkTrack> _songsQueue;
     private DiscordChannel? _textChannel;
     private LavalinkGuildConnection? _connection;
+    private bool _shouldPauseAfterStop;
 
     public AudioCommandsModule(AudioService audioService)
     {
@@ -117,8 +118,18 @@ public class AudioCommandsModule : BaseCommandModule
             await ctx.RespondAsync("Nie ma połączenia z Lavalink");
             return;
         }
-
-        var loadResult = await node.Rest.GetTracksAsync(soundName);
+        
+        
+        //Checks if search query is a URI
+        LavalinkLoadResult loadResult;
+        if (soundName.Contains("https"))
+        {
+            loadResult = await node.Rest.GetTracksAsync(new Uri(soundName));
+        }
+        else
+        {
+            loadResult = await node.Rest.GetTracksAsync(soundName);
+        }
 
         if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed
             || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches)
@@ -127,21 +138,37 @@ public class AudioCommandsModule : BaseCommandModule
             return;
         }
 
-        var track = loadResult.Tracks.First();
-        
-        if (_connection.CurrentState.CurrentTrack != null)
+        //Checks if loaded result is a playlist, if yes then it adds all songs to queue
+        if (loadResult.LoadResultType == LavalinkLoadResultType.PlaylistLoaded)
         {
-            _songsQueue.Enqueue(track);
-            await ctx.RespondAsync($"Dodane do kolejki: {track.Title}");
-            return;
+            foreach (var loadResultTrack in loadResult.Tracks)
+            {
+                _songsQueue.Enqueue(loadResultTrack);
+            }
+
+            var track = _songsQueue.Dequeue();
+            await _connection.PlayAsync(track);
+            await ctx.RespondAsync($"Zagrane");
         }
-        
-        
-        await _connection.PlayAsync(track);
-        await ctx.RespondAsync($"Zagrane");
+        else
+        {
+
+            var track = loadResult.Tracks.First();
+
+            if (_connection.CurrentState.CurrentTrack != null)
+            {
+                _songsQueue.Enqueue(track);
+                await ctx.RespondAsync($"Dodane do kolejki: {track.Title}");
+                return;
+            }
+
+
+            await _connection.PlayAsync(track);
+            await ctx.RespondAsync($"Zagrane");
+        }
     }
 
-    
+
     /// <summary>
     /// Plays track from local file
     /// </summary>
@@ -213,12 +240,22 @@ public class AudioCommandsModule : BaseCommandModule
             await ctx.Channel.SendMessageAsync("Musisz być na kanale głosowym");
             return;
         }
+        
+        var lava = ctx.Client.GetLavalink();
+        var node = lava.ConnectedNodes.Values.First();
+        if (!node.ConnectedGuilds.Any())
+        {
+            await ctx.RespondAsync("Nie ma mnie na żadnym kanale");
+            return;
+        }
+        
 
         if (_connection == null)
         {
             await ctx.RespondAsync("Nie ma połączenia z Lavalink");
             return;
         }
+        
 
         if (_connection.CurrentState.CurrentTrack == null)
         {
@@ -239,6 +276,14 @@ public class AudioCommandsModule : BaseCommandModule
             await ctx.Channel.SendMessageAsync("Musisz być na kanale głosowym");
             return;
         }
+        
+        var lava = ctx.Client.GetLavalink();
+        var node = lava.ConnectedNodes.Values.First();
+        if (!node.ConnectedGuilds.Any())
+        {
+            await ctx.RespondAsync("Nie ma mnie na żadnym kanale");
+            return;
+        }
 
         if (_connection == null)
         {
@@ -252,6 +297,82 @@ public class AudioCommandsModule : BaseCommandModule
             return;
         }
         await _connection.ResumeAsync();
+    }
+    
+    [Command("stop")]
+    [Description("pomija obecny utwór i zatrzymuje odtwarzacz")]
+    public async Task StopAsync(CommandContext ctx)
+    {
+        if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+        {
+            await ctx.Channel.SendMessageAsync("Musisz być na kanale głosowym");
+            return;
+        }
+        
+        var lava = ctx.Client.GetLavalink();
+        var node = lava.ConnectedNodes.Values.First();
+        if (!node.ConnectedGuilds.Any())
+        {
+            await ctx.RespondAsync("Nie ma mnie na żadnym kanale");
+            return;
+        }
+
+        if (_connection == null)
+        {
+            await ctx.RespondAsync("Nie ma połączenia z Lavalink");
+            return;
+        }
+
+        if (_connection.CurrentState.CurrentTrack == null)
+        {
+            await ctx.RespondAsync("Ale co ja mam stopować?");
+            return;
+        }
+
+        _shouldPauseAfterStop = true;
+        await _connection.StopAsync();
+
+    }
+    
+    [Command("skip")]
+    [Description("pomija obecny utwór")]
+    public async Task SkipAsync(CommandContext ctx)
+    {
+        if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+        {
+            await ctx.Channel.SendMessageAsync("Musisz być na kanale głosowym");
+            return;
+        }
+        
+        var lava = ctx.Client.GetLavalink();
+        var node = lava.ConnectedNodes.Values.First();
+        if (!node.ConnectedGuilds.Any())
+        {
+            await ctx.RespondAsync("Nie ma mnie na żadnym kanale");
+            return;
+        }
+
+        if (_connection == null)
+        {
+            await ctx.RespondAsync("Nie ma połączenia z Lavalink");
+            return;
+        }
+
+        if (_connection.CurrentState.CurrentTrack == null)
+        {
+            await ctx.RespondAsync("Ale co ja mam stopować?");
+            return;
+        }
+        await _connection.StopAsync();
+
+    }
+
+    [Command("clear")]
+    [Description("czyści kolejkę utworów")]
+    public async Task ClearQueue(CommandContext ctx)
+    {
+        _songsQueue.Clear();
+        await ctx.RespondAsync("Wyczyszono kolejkę");
     }
     
     /// <summary>
@@ -289,9 +410,21 @@ public class AudioCommandsModule : BaseCommandModule
         if (!_audioService.IsTrackIndetifierLocal(args.Track.Identifier) && _songsQueue.Count == 0)
         {
             await _textChannel.SendMessageAsync("Zagrano wszystko z kolejki, dawaj kolejne");
+            return;
         }
 
-        if (_songsQueue.Count > 0)
+        if (args.Reason == TrackEndReason.Stopped)
+        {
+            await _connection.PlayAsync(_songsQueue.Dequeue());
+            if (_shouldPauseAfterStop)
+            {
+                await _connection.PauseAsync();
+                _shouldPauseAfterStop = false;
+            }
+
+            return;
+        }
+            if (_songsQueue.Count > 0)
         {
             await _connection.PlayAsync(_songsQueue.Dequeue());
         }
