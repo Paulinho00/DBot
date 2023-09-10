@@ -128,7 +128,7 @@ public class AudioCommandsModule : BaseCommandModule
         }
         else
         {
-            loadResult = await node.Rest.GetTracksAsync(soundName);
+            loadResult = await node.Rest.GetTracksAsync(soundName, LavalinkSearchType.Spotify);
         }
 
         if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed
