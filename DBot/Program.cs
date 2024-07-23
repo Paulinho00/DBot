@@ -1,10 +1,83 @@
-﻿using DBot;
+﻿
+using DBot.CommandNextModules;
+using DBot.Services;
+using DisCatSharp;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.Enums;
+using DisCatSharp.Lavalink;
+using DisCatSharp.Net;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-public class Program
+namespace DBot
 {
-
-    public static Task Main(string[] args)
+    public class Program
     {
-        return new Startup().MainAsync();
+        public static void Main(string[] args)
+        {
+            MainAsync().GetAwaiter().GetResult();
+
+        }
+
+        static async Task MainAsync()
+        {
+
+            var discord = new DiscordClient(new DiscordConfiguration()
+            {
+                Token = File.ReadAllText("config.txt").Trim(),
+                TokenType = TokenType.Bot,
+                Intents = DiscordIntents.Guilds |
+                          DiscordIntents.GuildMembers |
+                          DiscordIntents.GuildMessageReactions |
+                          DiscordIntents.GuildMessages |
+                          DiscordIntents.GuildVoiceStates |
+                          DiscordIntents.GuildPresences |
+                          DiscordIntents.MessageContent |
+                          DiscordIntents.GuildWebhooks |
+                          DiscordIntents.All,
+                MinimumLogLevel = LogLevel.Debug
+            });
+
+            var services = new ServiceCollection()
+                    .AddTransient<IAudioService, AudioService>()
+                    .BuildServiceProvider();
+
+            var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
+            {
+                StringPrefixes = new List<string>() { "`" },
+                ServiceProvider = services
+            });
+
+            commands.RegisterCommands<AudioCommandsModule>();
+            commands.RegisterCommands<BasicMessageCommandsModule>();
+
+            var lavalinkConfig = GetLavalinkConfiguration();
+            
+            var lavalink = discord.UseLavalink();
+            
+            await discord.ConnectAsync();
+            await lavalink.ConnectAsync(lavalinkConfig);
+            await Task.Delay(-1);
+        }
+
+
+        private static LavalinkConfiguration GetLavalinkConfiguration()
+        {
+            var endpoint = new ConnectionEndpoint()
+            {
+                Hostname = "127.0.0.1",
+                Port = 2333
+            };
+
+            var lavalinkConfig = new LavalinkConfiguration()
+            {
+                Password = "youshallnotpass",
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint,
+                EnableBuiltInQueueSystem = true
+            };
+
+            return lavalinkConfig;
+        }
     }
 }

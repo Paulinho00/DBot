@@ -397,3 +397,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+*.idea
+
+# Lavalink files
+DBot/Lavalink/logs/*
+DBot/Lavalink/plugins/*
+DBot/Lavalink/Lavalink.jar
