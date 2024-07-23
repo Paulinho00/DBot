@@ -29,18 +29,18 @@ TODO:
 
 ## Launch
 First, you need to create account for your bot. Example tutorial is [here](https://docs.discord.red/en/stable/bot_application_guide.html). Save the token as it will be useful in next steps.
-Then download a recent release of DBot.\
-Next, you have to download Lavalink client (the required version is in the readme) and place it in the Lavalink directory. The application.yml contains a full configuration. Changing this configuration is not recommended.
-
-Then start your Lavalink server.
+Then download a recent release of DBot and run the Lavalink client.
 Go to Lavalink folder in console and run server by typing following command:
 ```
 java -jar .\Lavalink.jar
 ```
+The application.yml contains a full configuration. Changing this configuration is not recommended.
+
 Then you have to create your own `config.txt` file with your bot's token. Use token generated during the creation of bot account or generate it again. It can be generated at Discord.com -> Developers Portal -> Applications(choose your bot) -> Bot.
 You have to place `config.txt` file in the same directory as your bot's `.exe` file.
-Finally you can run DBot. \
-IMPORTANT! You have to move `Resources` folder to destination of your  `.exe` file. If you run bot with VS, `.exe` file is in project folder in `bin\Debug\` or `bin\Release\`
+Finally you can run DBot.
 
-If you want to play your local files, you need to put `.mp3` file in `Resources` folder. If you want to have more clear view of your all sounds, you can put your sounds in folders inside `Resources` folder, so to be displayed in seperate fields in embed message when typing `sounds` command.
+**IMPORTANT!** If you want to play your local files, you need to put `.mp3` file in `Resources` folder. You have to move `Resources` folder to destination of your  `.exe` file. 
+
+ If you want to have more clear view of your all sounds, you can put your sounds in folders inside `Resources` folder, so to be displayed in seperate fields in embed message when typing `sounds` command.
 
