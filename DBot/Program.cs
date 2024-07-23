@@ -16,10 +16,12 @@ namespace DBot
         public static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
+
         }
 
         static async Task MainAsync()
         {
+
             var discord = new DiscordClient(new DiscordConfiguration()
             {
                 Token = File.ReadAllText("config.txt").Trim(),
@@ -33,15 +35,17 @@ namespace DBot
                           DiscordIntents.MessageContent |
                           DiscordIntents.GuildWebhooks |
                           DiscordIntents.All,
-                MinimumLogLevel = LogLevel.Debug,
-                ServiceProvider = new ServiceCollection()
-                    .AddTransient<AudioService>()
-                    .BuildServiceProvider()
+                MinimumLogLevel = LogLevel.Debug
             });
+
+            var services = new ServiceCollection()
+                    .AddTransient<IAudioService, AudioService>()
+                    .BuildServiceProvider();
 
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
             {
-                StringPrefixes = new List<string>() { "`" }
+                StringPrefixes = new List<string>() { "`" },
+                ServiceProvider = services
             });
 
             commands.RegisterCommands<AudioCommandsModule>();
@@ -69,7 +73,8 @@ namespace DBot
             {
                 Password = "youshallnotpass",
                 RestEndpoint = endpoint,
-                SocketEndpoint = endpoint
+                SocketEndpoint = endpoint,
+                EnableBuiltInQueueSystem = true
             };
 
             return lavalinkConfig;
