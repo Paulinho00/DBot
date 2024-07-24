@@ -9,14 +9,23 @@
 
   <ItemGroup>
     <PackageReference Include="DisCatSharp" Version="10.6.4" />
+    <PackageReference Include="DisCatSharp.ApplicationCommands" Version="10.6.4" />
     <PackageReference Include="DisCatSharp.CommandsNext" Version="10.6.4" />
     <PackageReference Include="DisCatSharp.Lavalink" Version="10.6.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Resources\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

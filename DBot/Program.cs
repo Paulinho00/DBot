@@ -2,10 +2,12 @@
 using DBot.CommandNextModules;
 using DBot.Services;
 using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Enums;
 using DisCatSharp.Lavalink;
 using DisCatSharp.Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,10 +23,13 @@ namespace DBot
 
         static async Task MainAsync()
         {
-
-            var discord = new DiscordClient(new DiscordConfiguration()
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
+            var client = new DiscordClient(new DiscordConfiguration()
             {
-                Token = File.ReadAllText("config.txt").Trim(),
+                Token = config.GetRequiredSection("token").Get<string>(),
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.Guilds |
                           DiscordIntents.GuildMembers |
@@ -39,23 +44,30 @@ namespace DBot
             });
 
             var services = new ServiceCollection()
-                    .AddTransient<IAudioService, AudioService>()
+                    .AddSingleton<IAudioService, AudioService>()
                     .BuildServiceProvider();
 
-            var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
+            var commands = client.UseCommandsNext(new CommandsNextConfiguration()
             {
                 StringPrefixes = new List<string>() { "`" },
                 ServiceProvider = services
             });
 
-            commands.RegisterCommands<AudioCommandsModule>();
+            var appCommands = client.UseApplicationCommands(new ApplicationCommandsConfiguration()
+            {
+                ServiceProvider = services
+            });
+
+            var guildId = config.GetRequiredSection("guildId").Get<ulong>();
+            appCommands.RegisterGuildCommands<AudioCommandsModule>(guildId);
+            
             commands.RegisterCommands<BasicMessageCommandsModule>();
 
             var lavalinkConfig = GetLavalinkConfiguration();
             
-            var lavalink = discord.UseLavalink();
+            var lavalink = client.UseLavalink();
             
-            await discord.ConnectAsync();
+            await client.ConnectAsync();
             await lavalink.ConnectAsync(lavalinkConfig);
             await Task.Delay(-1);
         }
