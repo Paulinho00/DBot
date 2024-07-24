@@ -10,7 +10,7 @@ using DisCatSharp.Lavalink.Enums;
 
 namespace DBot.Services;
 
-public class AudioService : IAudioService
+public class AudioService(IMessageService messageService) : IAudioService
 {
     private readonly string[] _supportedFormats = { ".mp3", ".wav" };
     private readonly string _path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\Resources\";
@@ -21,18 +21,18 @@ public class AudioService : IAudioService
     {
         if (_session == null || !_session.IsConnected)
         {
-            await SendReplyMessage(ctx, "Nie ma połączenia do Lavalink");
+            await messageService.SendMessageAsync(ctx, "Nie ma połączenia do Lavalink");
             return;
         }
 
         if (_player == null)
         {
-            await SendReplyMessage(ctx, "Nie jestem podłączony do kanału");
+            await messageService.SendMessageAsync(ctx, "Nie jestem podłączony do kanału");
             return;
         }
 
         await _player.DisconnectAsync();
-        await SendReplyMessage(ctx,"Uciekam");
+        await messageService.SendMessageAsync(ctx,"Uciekam");
         _player = null;
         _session = null;
     }
@@ -51,6 +51,7 @@ public class AudioService : IAudioService
         }
 
         var embeds = new List<DiscordEmbed> { embed.Build() }.AsReadOnly();
+        //TODO: Move to the IMessageService
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithEmbed(embed)));
     }
@@ -59,7 +60,7 @@ public class AudioService : IAudioService
     {
         if (ctx.Member!.VoiceState == null)
         {
-            await SendReplyMessage(ctx, "Musisz być na kanale głosowym");
+            await messageService.SendMessageAsync(ctx, "Musisz być na kanale głosowym");
             return;
         }
 
@@ -83,7 +84,7 @@ public class AudioService : IAudioService
         if (loadResult.LoadType == LavalinkLoadResultType.Empty
             || loadResult.LoadType == LavalinkLoadResultType.Error)
         {
-            await SendReplyMessage(ctx, "Nie ma nic takiego");
+            await messageService.SendMessageAsync(ctx, "Nie ma nic takiego");
             return;
         }
 
@@ -97,7 +98,7 @@ public class AudioService : IAudioService
                 _player.PlayQueueAsync();
             }
 
-            await SendReplyMessage(ctx, "Zagrane");
+            await messageService.SendMessageAsync(ctx, "Zagrane");
         }
         else
         {
@@ -113,7 +114,7 @@ public class AudioService : IAudioService
 
             _player.AddToQueue(new TrackQueueEntry(ctx.Channel, track), track);
             _player.PlayQueueAsync();
-            await SendReplyMessage(ctx, $"Dodane do kolejki: {track.Info.Title} - {track.Info.Author}");
+            await messageService.SendMessageAsync(ctx, $"Dodane do kolejki: {track.Info.Title} - {track.Info.Author}");
         }
     }
     
@@ -121,7 +122,7 @@ public class AudioService : IAudioService
     {
         if (ctx.Member!.VoiceState == null)
         {
-            await SendReplyMessage(ctx, "Musisz być na kanale głosowym");
+            await messageService.SendMessageAsync(ctx, "Musisz być na kanale głosowym");
             return;
         }
 
@@ -134,7 +135,7 @@ public class AudioService : IAudioService
         var filepath = GetFilePath(fileName);
         if (filepath == null)
         {
-            await SendReplyMessage(ctx, "Co ty wymyślasz, nie ma takiego dźwięku");
+            await messageService.SendMessageAsync(ctx, "Co ty wymyślasz, nie ma takiego dźwięku");
             return;
         }
 
@@ -143,7 +144,7 @@ public class AudioService : IAudioService
         if (loadResult.LoadType == LavalinkLoadResultType.Empty
             || loadResult.LoadType == LavalinkLoadResultType.Error)
         {
-            await SendReplyMessage(ctx, "Co ty wymyślasz, nie ma takiego dźwięku");
+            await messageService.SendMessageAsync(ctx, "Co ty wymyślasz, nie ma takiego dźwięku");
             return;
         }
         
@@ -153,87 +154,87 @@ public class AudioService : IAudioService
             _player.PlayQueueAsync();
         }
 
-        await SendReplyMessage(ctx,$"Zagrane");
+        await messageService.SendMessageAsync(ctx,$"Zagrane");
     }
     
     public async Task PauseAsync(InteractionContext ctx)
     {
         if (_session == null)
         {
-            await SendReplyMessage(ctx, "Nie ma mnie na żadnym kanale");
+            await messageService.SendMessageAsync(ctx, "Nie ma mnie na żadnym kanale");
             return;
         }
 
         if (_player!.CurrentTrack == null)
         {
-            await SendReplyMessage(ctx, "Ale co ja mam wznawiać?");
+            await messageService.SendMessageAsync(ctx, "Ale co ja mam wznawiać?");
             return;
         }
         
         await _player.PauseAsync();
-        await SendReplyMessage(ctx, "Zapauzowane");
+        await messageService.SendMessageAsync(ctx, "Zapauzowane");
     }
     
     public async Task ResumeAsync(InteractionContext ctx)
     {
         if (_session == null)
         {
-            await SendReplyMessage(ctx, "Nie ma mnie na żadnym kanale");
+            await messageService.SendMessageAsync(ctx, "Nie ma mnie na żadnym kanale");
             return;
         }
 
         if (_player!.CurrentTrack == null)
         {
-            await SendReplyMessage(ctx, "Ale co ja mam wznawiać?");
+            await messageService.SendMessageAsync(ctx, "Ale co ja mam wznawiać?");
             return;
         }
         await _player.ResumeAsync();
-        await SendReplyMessage(ctx, "Jedziemy");
+        await messageService.SendMessageAsync(ctx, "Jedziemy");
     }
     
     public async Task StopAsync(InteractionContext ctx)
     {
         if (_session == null)
         {
-            await SendReplyMessage(ctx,"Nie ma mnie na żadnym kanale");
+            await messageService.SendMessageAsync(ctx,"Nie ma mnie na żadnym kanale");
             return;
         }
 
         if (_player!.CurrentTrack == null)
         {
-            await SendReplyMessage(ctx, "Ale co ja mam Stopować?");
+            await messageService.SendMessageAsync(ctx, "Ale co ja mam Stopować?");
             return;
         }
         
         await _player.StopAsync();
-        await SendReplyMessage(ctx, "Zastopowane");
+        await messageService.SendMessageAsync(ctx, "Zastopowane");
     }
     
     public async Task SkipAsync(InteractionContext ctx)
     {
         if (_session == null)
         {
-            await SendReplyMessage(ctx, "Nie ma mnie na żadnym kanale");
+            await messageService.SendMessageAsync(ctx, "Nie ma mnie na żadnym kanale");
             return;
         }
 
         if (_player!.QueueEntries.Count == 0)
         {
-            await SendReplyMessage(ctx, "Ale co ja mam Stopować?");
+            await messageService.SendMessageAsync(ctx, "Ale co ja mam Stopować?");
             return;
         }
 
         //_shouldPauseAfterStop = true;
         var firstTrack = _player.QueueEntries[0];
         _player.RemoveFromQueue(firstTrack);
-        await SendReplyMessage(ctx, $"Pominięto {firstTrack.Track.Info.Title} - {firstTrack.Track.Info.Author}");
+        await messageService.SendMessageAsync(ctx, $"Pominięto {firstTrack.Track.Info.Title} - {firstTrack.Track.Info.Author}");
     }
 
     public async Task ClearQueueAsync(InteractionContext ctx)
     {
         if (_player == null)
         {
-            await SendReplyMessage(ctx, "Nic nie ma w kolejce");
+            await messageService.SendMessageAsync(ctx, "Nic nie ma w kolejce");
             return;
         }
 
@@ -241,7 +242,7 @@ public class AudioService : IAudioService
         {
             _player.RemoveFromQueue(queueEntry);
         }
-        await SendReplyMessage(ctx, "Wyczyszono kolejkę");
+        await messageService.SendMessageAsync(ctx, "Wyczyszono kolejkę");
     }
     
     /// <summary>
@@ -352,15 +353,7 @@ public class AudioService : IAudioService
 
          return categorySounds;
      }
-     
-     private async Task SendReplyMessage(InteractionContext ctx, string message)
-     {
-         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-             new DiscordInteractionResponseBuilder()
-             {
-                 Content = message
-             });
-     }
+    
      
      /// <summary>
      /// Tries to connect to voice channel
@@ -373,7 +366,7 @@ public class AudioService : IAudioService
 
          if (!lava.ConnectedSessions.Any())
          {
-             await SendReplyMessage(ctx, "Nie ma połączenia z Lavalink");
+             await messageService.SendMessageAsync(ctx, "Nie ma połączenia z Lavalink");
              return false;
          }
 
@@ -385,12 +378,12 @@ public class AudioService : IAudioService
          _session = await lava.ConnectAsync(lavalinkConfig);
          if (ctx.Member!.VoiceState == null ||  ctx.Member.VoiceState.Channel!.Type != ChannelType.Voice)
          {
-             await SendReplyMessage(ctx, "Musisz być na kanale głosowym");
+             await messageService.SendMessageAsync(ctx, "Musisz być na kanale głosowym");
              return false;
          }
         
          _player = await _session.ConnectAsync(ctx.Member.VoiceState.Channel);
-         await SendReplyMessage(ctx, $"Dołączyłem do {ctx.Member.VoiceState.Channel.Name}");
+         await messageService.SendMessageAsync(ctx, $"Dołączyłem do {ctx.Member.VoiceState.Channel.Name}");
          return true;
      }
 }

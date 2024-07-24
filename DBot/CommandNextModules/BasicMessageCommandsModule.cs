@@ -1,10 +1,12 @@
-﻿using DisCatSharp.CommandsNext;
-using DisCatSharp.CommandsNext.Attributes;
+﻿using DBot.Services;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.ApplicationCommands.Attributes;
+using DisCatSharp.ApplicationCommands.Context;
 using DisCatSharp.Entities;
 
 namespace DBot.CommandNextModules;
 
-public class BasicMessageCommandsModule : BaseCommandModule
+public class BasicMessageCommandsModule(IMessageService _messageService) : ApplicationCommandsModule
 {
     /// <summary>
     /// `pingpong Bob -> ping ten times @Bob
@@ -12,13 +14,13 @@ public class BasicMessageCommandsModule : BaseCommandModule
     /// <param name="user"></param>
     /// <param name="ctx"></param>
     /// <returns></returns>
-    [Command("pingpong")]
-    [Description("pinguje dziesięć razy wybraną osobę")]
-    public async Task PingUserTenTimesAsync(CommandContext ctx, [RemainingText][Description("użytkownik")] DiscordMember? user = null)
+    [SlashCommand("pingpong", "pinguje dziesięć razy wybraną osobę")]
+    public async Task PingUserTenTimesAsync(InteractionContext ctx, [Option("nazwaUzytkownika", "Nazwa użytkownika do spingowania")] DiscordUser? user = null)
     {
-        if (user == null) await ctx.Channel.SendMessageAsync("Nie ma takiego użytkownika");
+        if (user == null) await _messageService.SendMessageAsync(ctx, "Nie ma takiego użytkownika");
         else
         {
+            await _messageService.SendMessageAsync(ctx, "HALO");
             for (int i = 0; i < 10; i++)
             {
                 await ctx.Channel.SendMessageAsync($"<@{user.Id}>");
@@ -32,12 +34,12 @@ public class BasicMessageCommandsModule : BaseCommandModule
     /// <param name="gamesName"></param>
     /// <param name="ctx"></param>
     /// <returns></returns>
-    [Command("draw")]
-    [Description("losuje gre")]
-    public async Task DrawGameAsync(CommandContext ctx, [RemainingText][Description("lista gier")] params string[] gamesName)
+    [SlashCommand("draw", "losuje gre")]
+    public async Task DrawGameAsync(InteractionContext ctx, [Option("listGier","lista gier, oddzielona spacjami")] string gamesName)
     {
         Random random = new Random();
-        int indexOfGame = random.Next(gamesName.Length);
-        await ctx.RespondAsync($"Gra: {gamesName[indexOfGame]}");
+        var games = gamesName.Split(" ");
+        int indexOfGame = random.Next(games.Length);
+        await _messageService.SendMessageAsync(ctx, $"Gra: {games[indexOfGame]}");
     }
 }

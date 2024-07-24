@@ -3,7 +3,6 @@ using DBot.CommandNextModules;
 using DBot.Services;
 using DisCatSharp;
 using DisCatSharp.ApplicationCommands;
-using DisCatSharp.CommandsNext;
 using DisCatSharp.Enums;
 using DisCatSharp.Lavalink;
 using DisCatSharp.Net;
@@ -45,13 +44,8 @@ namespace DBot
 
             var services = new ServiceCollection()
                     .AddSingleton<IAudioService, AudioService>()
+                    .AddTransient<IMessageService, MessageService>()
                     .BuildServiceProvider();
-
-            var commands = client.UseCommandsNext(new CommandsNextConfiguration()
-            {
-                StringPrefixes = new List<string>() { "`" },
-                ServiceProvider = services
-            });
 
             var appCommands = client.UseApplicationCommands(new ApplicationCommandsConfiguration()
             {
@@ -60,8 +54,8 @@ namespace DBot
 
             var guildId = config.GetRequiredSection("guildId").Get<ulong>();
             appCommands.RegisterGuildCommands<AudioCommandsModule>(guildId);
+            appCommands.RegisterGuildCommands<BasicMessageCommandsModule>(guildId);
             
-            commands.RegisterCommands<BasicMessageCommandsModule>();
 
             var lavalinkConfig = GetLavalinkConfiguration();
             

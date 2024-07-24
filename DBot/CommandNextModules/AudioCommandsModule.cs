@@ -9,9 +9,10 @@ using DisCatSharp.CommandsNext.Attributes;
 
 namespace DBot.CommandNextModules;
 
+//TODO: Add volume Command
+//TODO: Add other sources option 
 public class AudioCommandsModule(IAudioService audioService) : ApplicationCommandsModule
 {
-
     [SlashCommand("join", "Dołącza bota do kanału głosowego")]
     [Aliases("j")]
     public async Task Join(InteractionContext ctx)
