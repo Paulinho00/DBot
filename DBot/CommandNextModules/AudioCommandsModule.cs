@@ -1,10 +1,8 @@
 ﻿
-using DBot.Entities;
 using DBot.Services;
 using DisCatSharp.ApplicationCommands;
 using DisCatSharp.ApplicationCommands.Attributes;
 using DisCatSharp.ApplicationCommands.Context;
-using DisCatSharp.CommandsNext.Attributes;
 
 
 namespace DBot.CommandNextModules;
@@ -14,7 +12,6 @@ namespace DBot.CommandNextModules;
 public class AudioCommandsModule(IAudioService audioService) : ApplicationCommandsModule
 {
     [SlashCommand("join", "Dołącza bota do kanału głosowego")]
-    [Aliases("j")]
     public async Task Join(InteractionContext ctx)
     {
         await audioService.ConnectToVoiceChannelAsync(ctx);
